@@ -57,11 +57,12 @@ class open_digraph: #for open directed graph
     def get_id_node_map(self):
         return self.nodes
     def get_nodes(self):
-        return list(self.nodes.values)
+        return list(self.nodes.values())
     def get_nodes_ids(self):
         return list(self.nodes.keys())
     def __getitem__(self, i):
-        r = filter(self.nodes, lambda x: x.get_id() == i)
+        r = filter(lambda x: x.get_id() == i, self.nodes)
+        r = list(r)
         if(len(r)==0):
             return None
         if(len(r)>1):
@@ -77,19 +78,28 @@ class open_digraph: #for open directed graph
     def add_output_id(self, id): 
         self.outputs.append(id)
 
+    def new_id(self):
+        ids = self.get_nodes_ids()
+        ids = sorted(ids)
+        for i in range(ids[0], ids[-1]):
+            if i not in ids:
+                return i
+        return ids[-1] + 1
+
+
 
     def __str__(self):
         res = ""
         res += "graph:\n"
         res += "\tInputs:\n"
         res += "\t\t"
-        for i in self.get_inputs():
+        for i in self.get_inputs_ids():
             res += f"{i} "
         res+="\n"
 
         res += "\tOutputs:\n"
         res += "\t\t"
-        for i in self.get_outputs():
+        for i in self.get_outputs_ids():
             res+=f"{i} "
         res+="\n"
 
