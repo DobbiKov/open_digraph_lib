@@ -69,10 +69,13 @@ class open_digraph: #for open directed graph
             raise RuntimeError(f"Digraph has 2 elements with the same id {i}")
         return r[0] 
     def get_nodes_by_ids(self, ids):
-        return [self[i] for i in ids]
+        return [self.get_id_node_map()[i] for i in ids]
 
+    #Setters
     def set_inputs(self, inputs): self.inputs = inputs
     def set_outputs(self, outputs): self.outputs = outputs
+
+    #Adders
     def add_input_id(self, id): 
         self.inputs.append(id)
     def add_output_id(self, id): 
@@ -85,6 +88,23 @@ class open_digraph: #for open directed graph
             if i not in ids:
                 return i
         return ids[-1] + 1
+
+    def add_edge(self, src, tgt):
+        if src not in self.get_nodes_ids() or tgt not in self.get_nodes_ids():
+            return None
+        self.nodes[src].add_child_id(tgt)
+        self.nodes[tgt].add_parent_id(src)
+    def add_node(self, label='', parents=None, children=None):
+        n_id = self.new_id()
+        n = node(n_id, label, {}, {})
+        self.nodes[n_id] = n
+        if parents != None:
+            for i in parents.keys():
+                self.add_edge(i, n_id)
+        if children != None:
+            for i in children.keys():
+                self.add_edge(n_id, i)
+        return n_id
 
 
 

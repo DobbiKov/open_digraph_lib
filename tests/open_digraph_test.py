@@ -47,7 +47,105 @@ class InitTest(unittest.TestCase):
         g0 = open_digraph([0], [2], 
                           [n0, n1, n2])
         self.assertEqual(g0.new_id(), 2)
+    def test_getters(self):
+        n0 = node(0, 'i', {}, {1:1})
+        n1 = node(1, 'i', {0:0}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {}, {})
+        g0 = open_digraph([0, 3], [2], 
+                          [n0, n1, n2, n3])
+        self.assertEqual(g0.get_nodes_ids(), [0, 1, 2, 3])
+        self.assertEqual(g0.get_inputs_ids(), [0, 3])
+        self.assertEqual(g0.get_outputs_ids(), [2])
+        self.assertEqual(g0.get_nodes(), [n0, n1, n2, n3])
+        self.assertEqual(g0.get_nodes_by_ids([1, 3]), [n1, n3])
+        self.assertEqual(g0.get_id_node_map(), {0:n0, 1:n1, 2:n2, 3:n3})
 
+    def test_setters(self):
+        n0 = node(0, 'i', {}, {1:1})
+        n1 = node(1, 'i', {0:0}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {}, {})
+        g0 = open_digraph([0, 3], [2], 
+                          [n0, n1, n2, n3])
+        self.assertEqual(g0.get_inputs_ids(), [0, 3])
+        self.assertEqual(g0.get_outputs_ids(), [2])
+
+        g0.add_input_id(4)
+        self.assertEqual(g0.get_inputs_ids(), [0, 3, 4])
+
+        g0.add_output_id(5)
+        self.assertEqual(g0.get_outputs_ids(), [2, 5])
+
+        g0.set_inputs([1,2])
+        self.assertEqual(g0.get_inputs_ids(), [1,2])
+
+        g0.set_outputs([3,4])
+        self.assertEqual(g0.get_outputs_ids(), [3,4])
+    def test_add_edge_no_id(self):
+        n0 = node(0, 'i', {}, {1:1})
+        n1 = node(1, 'i', {0:0}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {}, {})
+        g0 = open_digraph([0, 3], [2], 
+                          [n0, n1, n2, n3])
+
+        self.assertEqual(n2.get_children(), {})
+        g0.add_edge(2, 4)
+        self.assertEqual(n2.get_children(), {})
+        self.assertEqual(n2.get_parents(), {1:1})
+        g0.add_edge(4, 2)
+        self.assertEqual(n2.get_parents(), {1:1})
+
+    def test_add_edge(self):
+        n0 = node(0, 'i', {}, {1:1})
+        n1 = node(1, 'i', {0:0}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {}, {})
+        g0 = open_digraph([0, 3], [2], 
+                          [n0, n1, n2, n3])
+
+        self.assertEqual(n2.get_children(), {})
+        self.assertEqual(n3.get_children(), {})
+        self.assertEqual(n3.get_parents(), {})
+        g0.add_edge(2, 3)
+        self.assertEqual(n2.get_children(), {3:3})
+        self.assertEqual(n3.get_parents(), {2:2})
+    def test_add_empty_node(self):
+        n0 = node(0, 'i', {}, {1:1})
+        n1 = node(1, 'i', {0:0}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {}, {})
+        g0 = open_digraph([0, 3], [2], 
+                          [n0, n1, n2, n3])
+        self.assertEqual(g0.get_id_node_map(), {0:n0, 1:n1, 2:n2, 3:n3})
+        new_id = g0.add_node('hey')
+        self.assertEqual(new_id, 4)
+        new_node = g0.get_nodes_by_ids([4])[0]
+        self.assertEqual(g0.get_id_node_map(), {0:n0, 1:n1, 2:n2, 3:n3, 4:new_node})
+        self.assertEqual(new_node.get_label(), 'hey')
+        self.assertEqual(new_node.get_id(), 4)
+        self.assertEqual(new_node.get_parents(), {})
+        self.assertEqual(new_node.get_children(), {})
+
+    def test_add_node(self):
+        n0 = node(0, 'i', {}, {1:1})
+        n1 = node(1, 'i', {0:0}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {}, {})
+        g0 = open_digraph([0, 3], [2], 
+                          [n0, n1, n2, n3])
+        self.assertEqual(g0.get_id_node_map(), {0:n0, 1:n1, 2:n2, 3:n3})
+        self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {1:1})
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3})
+        self.assertEqual(g0.get_nodes_by_ids([2])[0].get_parents(), {1:1})
+        new_id = g0.add_node('hey', {1:1, 0:0}, {2:2})
+        self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {1:1, 4:4})
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3, 4:4})
+        self.assertEqual(g0.get_nodes_by_ids([2])[0].get_parents(), {1:1, 4:4})
+
+        self.assertEqual(new_id, 4)
+        self.assertEqual(g0.get_nodes_ids(), [0, 1, 2, 3, 4])
 
 class NodeTest(unittest.TestCase):
     def setUp(self):
