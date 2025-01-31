@@ -104,7 +104,7 @@ class open_digraph: #for open directed graph
         return list(self.nodes.values())
     def get_nodes_ids(self):
         return list(self.nodes.keys())
-    def __getitem__(self, i):
+    def __getitem__(self, i) -> node | None:
         """
         Allow accessing a node by its ID using indexing.
 
@@ -114,7 +114,7 @@ class open_digraph: #for open directed graph
         Returns:
             node or None: The node with the specified ID, or None if not found.
         """
-        r = filter(lambda x: x.get_id() == i, self.nodes)
+        r = filter(lambda x: x.get_id() == i, self.nodes.values())
         r = list(r)
         if(len(r)==0):
             return None
