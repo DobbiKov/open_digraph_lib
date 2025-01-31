@@ -127,6 +127,17 @@ class InitTest(unittest.TestCase):
         self.assertEqual(new_node.get_id(), 4)
         self.assertEqual(new_node.get_parents(), {})
         self.assertEqual(new_node.get_children(), {})
+    
+    def test_well_formed_graph(self):
+        n0 = node(0, 'input', {}, {1: 1})
+        n1 = node(1, 'middle', {0: 1}, {2: 1})
+        n2 = node(2, 'output', {1: 1}, {})
+        g = open_digraph([0], [2], [n0, n1, n2])
+        
+        try:
+            g.assert_is_well_formed()
+        except AssertionError:
+            self.fail("assert_is_well_formed() raised AssertionError unexpectedly!")
 
     def test_add_node(self):
         n0 = node(0, 'i', {}, {1:1})
