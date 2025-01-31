@@ -109,8 +109,8 @@ class InitTest(unittest.TestCase):
         self.assertEqual(n3.get_children(), {})
         self.assertEqual(n3.get_parents(), {})
         g0.add_edge(2, 3)
-        self.assertEqual(n2.get_children(), {3:3})
-        self.assertEqual(n3.get_parents(), {2:2})
+        self.assertEqual(n2.get_children(), {3:1})
+        self.assertEqual(n3.get_parents(), {2:1})
     def test_add_empty_node(self):
         n0 = node(0, 'i', {}, {1:1})
         n1 = node(1, 'i', {0:0}, {3:3})
@@ -139,10 +139,10 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {1:1})
         self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3})
         self.assertEqual(g0.get_nodes_by_ids([2])[0].get_parents(), {1:1})
-        new_id = g0.add_node('hey', {1:1, 0:0}, {2:2})
-        self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {1:1, 4:4})
-        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3, 4:4})
-        self.assertEqual(g0.get_nodes_by_ids([2])[0].get_parents(), {1:1, 4:4})
+        new_id = g0.add_node('hey', {1:1, 0:1}, {2:2})
+        self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {1:1, 4:1})
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3, 4:1})
+        self.assertEqual(g0.get_nodes_by_ids([2])[0].get_parents(), {1:1, 4:2})
 
         self.assertEqual(new_id, 4)
         self.assertEqual(g0.get_nodes_ids(), [0, 1, 2, 3, 4])
@@ -177,14 +177,55 @@ class NodeTest(unittest.TestCase):
         self.n0.set_children({6:6, 2:2})
         self.assertEqual(self.n0.get_children(), {6:6, 2:2})
         self.n0.add_child_id(4)
-        self.assertEqual(self.n0.get_children(), {6:6, 2:2, 4:4})
+        self.assertEqual(self.n0.get_children(), {6:6, 2:2, 4:1})
+        self.n0.add_child_id(4)
+        self.assertEqual(self.n0.get_children(), {6:6, 2:2, 4:2})
     def test_add_parent_id(self):
         self.n0.set_parents({3:3, 5:5})
         self.assertEqual(self.n0.get_parents(), {3:3, 5:5})
         self.n0.add_parent_id(4)
-        self.assertEqual(self.n0.get_parents(), {3:3, 5:5, 4:4})
+        self.assertEqual(self.n0.get_parents(), {3:3, 5:5, 4:1})
+        self.n0.add_parent_id(4)
+        self.assertEqual(self.n0.get_parents(), {3:3, 5:5, 4:2})
     def test_copy(self):
         self.assertIsNot(self.n0.copy(), self.n0)
+    def test_remove_parent_children_one(self):
+        n1 = node(0, 'a', {2:3, 3:1, 4:1}, {5:2, 6:1})
+        self.assertEqual(n1.get_parents(), {2:3, 3:1, 4:1})
+        self.assertEqual(n1.get_children(), {5:2, 6:1})
+
+        n1.remove_parent_once(3)
+        self.assertEqual(n1.get_parents(), {2:3, 4:1})
+
+        n1.remove_parent_once(2)
+        self.assertEqual(n1.get_parents(), {2:2, 4:1})
+
+        n1.remove_child_once(5)
+        self.assertEqual(n1.get_children(), {5:1, 6:1})
+
+        n1.remove_child_once(6)
+        self.assertEqual(n1.get_children(), {5:1})
+
+    def test_remove_parent_children_id(self):
+        n1 = node(0, 'a', {2:3, 3:1, 4:1}, {5:2, 6:1})
+        self.assertEqual(n1.get_parents(), {2:3, 3:1, 4:1})
+        self.assertEqual(n1.get_children(), {5:2, 6:1})
+
+        n1.remove_parent_id(2)
+        self.assertEqual(n1.get_parents(), {3:1, 4:1})
+        n1.remove_parent_id(3)
+        self.assertEqual(n1.get_parents(), {4:1})
+        n1.remove_parent_id(5)
+        self.assertEqual(n1.get_parents(), {4:1})
+        n1.remove_parent_id(4)
+        self.assertEqual(n1.get_parents(), {})
+
+        n1.remove_child_id(10)
+        self.assertEqual(n1.get_children(), {5:2, 6:1})
+        n1.remove_child_id(5)
+        self.assertEqual(n1.get_children(), {6:1})
+        n1.remove_child_id(6)
+        self.assertEqual(n1.get_children(), {})
 
 if __name__ == "__main__":
     unittest.main()
