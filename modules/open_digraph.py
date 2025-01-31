@@ -6,10 +6,10 @@ class node:
         parents: int->int dict; maps a parent node's id to its multiplicity
         children: int->int dict; maps a child node's id to its multiplicity
         '''
-        self.id = identity
-        self.label = label
-        self.parents = parents
-        self.children = children
+        self.id: int = identity
+        self.label: str = label
+        self.parents: dict[int, int] = parents
+        self.children: dict[int, int] = children
 
     #Getters
     def get_id(self): return self.id
@@ -24,9 +24,42 @@ class node:
     def set_children(self,v): self.children = v
 
     def add_child_id(self, id):
-        self.children[id] = id
+        if id not in self.get_children().keys():
+            self.children[id] = 1
+        else:
+            self.children[id] += 1
+
     def add_parent_id(self, id):
-        self.parents[id] =id
+        if id not in self.get_parents().keys():
+            self.parents[id] = 1
+        else:
+            self.parents[id] += 1
+
+    #Removers
+    def remove_parent_once(self, id):
+        if id not in self.get_parents().keys() or self.get_parents()[id] <= 0:
+            return
+        self.parents[id] -= 1
+        if self.get_parents()[id] == 0:
+            self.remove_parent_id(id)
+
+    def remove_child_once(self, id):
+        if id not in self.get_children().keys() or self.get_children()[id] <= 0:
+            return
+        self.children[id] -= 1
+
+        if self.get_children()[id] == 0:
+            self.remove_child_id(id)
+
+    def remove_parent_id(self, id):
+        if id not in self.get_parents().keys():
+            return
+        self.parents.pop(id)
+
+    def remove_child_id(self, id):
+        if id not in self.get_children().keys():
+            return
+        self.children.pop(id)
 
 
     def __str__(self):   #Return a string representation of the node
@@ -54,9 +87,9 @@ class open_digraph: #for open directed graph
             outputs: int list; the ids of the output nodes
             nodes: node iter;
         '''
-        self.inputs = inputs
-        self.outputs = outputs
-        self.nodes = {node.id:node for node in nodes} # self.nodes: <int,node> dict
+        self.inputs: list[int] = inputs
+        self.outputs: list[int] = outputs
+        self.nodes: dict[int, node] = {node.id:node for node in nodes} # self.nodes: <int,node> dict
         
     #Getters
     def get_inputs_ids(self):
@@ -139,12 +172,65 @@ class open_digraph: #for open directed graph
         self.nodes[n_id] = n
         if parents != None:
             for i in parents.keys():
-                self.add_edge(i, n_id)
+                for j in range(parents[i]): #we add as many edges as we have multiplicities
+                    self.add_edge(i, n_id)
         if children != None:
             for i in children.keys():
-                self.add_edge(n_id, i)
+                for j in range(children[i]): #we add as many edges as we have multiplicities
+                    self.add_edge(n_id, i)
         return n_id
 
+    #removers
+    def remove_edge(self, src, tgt):
+        """
+        Remove one edge pointing from [src] to [tgt]
+
+        Args:
+            src(int): id of the node we point edge from
+            tgt(int): id of the node we point edge to 
+        Returns:
+            None
+        """
+        self.nodes[src].remove_child_once(tgt)
+        self.nodes[tgt].remove_parent_once(src)
+
+    def remove_parallel_edges(self, src, tgt):
+        """
+        Remove all the edges pointing from [src] to [tgt]
+
+        Args:
+            src(int): id of the node we point edge from
+            tgt(int): id of the node we point edge to 
+        Returns:
+            None
+        """
+        self.nodes[src].remove_child_id(tgt)
+        self.nodes[tgt].remove_parent_id(src)
+
+    def remove_node_by_id(self, id):
+        """
+        Remove the node by given id and remove carefully all the edges pointing to or from the given node
+
+        Args:
+            id(int): node id
+        Returns:
+            None
+        """
+        #removing edges
+        if id not in self.get_nodes_ids():
+            return
+        for i in self.get_id_node_map()[id].get_parents().keys():
+            self.remove_parallel_edges(i, id)
+        for i in self.get_id_node_map()[id].get_children().keys():
+            self.remove_parallel_edges(id, i)
+
+        #removing from lists
+        if id in self.nodes.keys():
+            self.nodes.pop(id)
+        if id in self.inputs:
+            self.inputs.pop(id)
+        if id in self.outputs:
+            self.outputs.pop(id)
 
 
     def __str__(self):
