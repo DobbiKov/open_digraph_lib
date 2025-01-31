@@ -3,7 +3,7 @@ import os
 root = os.path.normpath(os.path.join(__file__, './../../'))
 sys.path.append(root) #allows us to fetch files from the project root
 
-import modules.open_digraph
+from modules.open_digraph import *
 
 import graphviz
 

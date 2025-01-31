@@ -127,6 +127,7 @@ class InitTest(unittest.TestCase):
         self.assertEqual(new_node.get_id(), 4)
         self.assertEqual(new_node.get_parents(), {})
         self.assertEqual(new_node.get_children(), {})
+        self.assertRaises(AssertionError, g0.assert_is_well_formed)
     
     def test_well_formed_graph(self):
         n0 = node(0, 'input', {}, {1: 1})
@@ -134,10 +135,21 @@ class InitTest(unittest.TestCase):
         n2 = node(2, 'output', {1: 1}, {})
         g = open_digraph([0], [2], [n0, n1, n2])
         
-        try:
-            g.assert_is_well_formed()
-        except AssertionError:
-            self.fail("assert_is_well_formed() raised AssertionError unexpectedly!")
+        g.assert_is_well_formed()
+
+        n2 = node(2, 'output', {}, {3: 1})
+        g = open_digraph([0], [2], [n0, n1, n2])
+        self.assertRaises(AssertionError, g.assert_is_well_formed)
+
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {0:1}, {})
+        n3 = node(3, 'a', {1:3, 4:1}, {})
+        n4 = node(4, 'i', {}, {3:1})
+        g0 = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+
+        g0.assert_is_well_formed()
 
     def test_add_node(self):
         n0 = node(0, 'i', {}, {1:1})
@@ -204,7 +216,45 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g0.get_nodes_by_ids([3])[0].get_parents(), {})
         self.assertEqual(g0.get_outputs_ids(), [2])
 
+    def test_add_input_node(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {0:1}, {})
+        n3 = node(3, 'a', {1:3, 4:1}, {})
+        n4 = node(4, 'i', {}, {3:1})
+        g0 = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+        g0.assert_is_well_formed()
+        self.assertEqual(g0.get_inputs_ids(), [4])
 
+        self.assertEqual(g0.get_id_node_map()[0].get_parents(), {})
+        self.assertIsNot(5 in g0.get_nodes_ids(), True)
+        g0.add_input_node(0)
+        self.assertEqual(g0.get_id_node_map()[0].get_parents(), {5:1})
+        self.assertIs(5 in g0.get_nodes_ids(), True)
+        self.assertEqual(g0.get_id_node_map()[5].get_children(), {0:1})
+        self.assertEqual(g0.get_inputs_ids(), [4, 5])
+        g0.assert_is_well_formed()
+
+    def test_add_output_node(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {0:1}, {})
+        n3 = node(3, 'a', {1:3, 4:1}, {})
+        n4 = node(4, 'i', {}, {3:1})
+        g0 = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+        g0.assert_is_well_formed()
+        self.assertEqual(g0.get_nodes_ids(), [0, 1, 2, 3, 4])
+        self.assertEqual(g0.get_outputs_ids(), [2])
+        self.assertEqual(g0.get_id_node_map()[3].get_children(), {})
+
+        g0.add_output_node(3)
+        self.assertEqual(g0.get_nodes_ids(), [0, 1, 2, 3, 4, 5])
+        self.assertEqual(g0.get_outputs_ids(), [2, 5])
+        self.assertEqual(g0.get_id_node_map()[3].get_children(), {5:1})
+        self.assertEqual(g0.get_id_node_map()[5].get_parents(), {3:1})
+        g0.assert_is_well_formed()
 
 
 class NodeTest(unittest.TestCase):
@@ -286,6 +336,206 @@ class NodeTest(unittest.TestCase):
         self.assertEqual(n1.get_children(), {6:1})
         n1.remove_child_id(6)
         self.assertEqual(n1.get_children(), {})
+
+class TestOpenDigraphWellFromedNess(unittest.TestCase):
+    def setUp(self):
+        """
+        Set up a simple well-formed graph for testing:
+        
+        input_node (id=1) -> A (id=2) -> output_node (id=3)
+        """
+        self.input_node = node(identity=1, label='input', parents={}, children={2:1})
+        self.node_A = node(identity=2, label='A', parents={1:1}, children={3:1})
+        self.output_node = node(identity=3, label='output', parents={2:1}, children={})
+        
+        self.good_graph = open_digraph(
+            inputs=[1],
+            outputs=[3],
+            nodes=[self.input_node, self.node_A, self.output_node]
+        )
+        self.good_graph.assert_is_well_formed()
+
+    def test_well_formed_accepts_good_graphs(self):
+        """
+        Test that a well-formed graph passes the well-formedness check.
+        """
+        try:
+            self.good_graph.assert_is_well_formed()
+        except AssertionError as e:
+            self.fail(f"Well-formed graph was incorrectly rejected: {e}")
+
+    def test_well_formed_rejects_bad_graphs(self):
+        """
+        Test that malformed graphs are correctly identified and rejected.
+        """
+        # Case 1: Input node has a parent
+        bad_input_node = node(identity=1, label='input', parents={2:1}, children={2:1})
+        bad_graph1 = open_digraph(
+            inputs=[1],
+            outputs=[3],
+            nodes=[bad_input_node, self.node_A, self.output_node]
+        )
+        with self.assertRaises(AssertionError):
+            bad_graph1.assert_is_well_formed()
+        
+        # Case 2: Node with inconsistent multiplicity
+        bad_node_A = node(identity=2, label='A', parents={1:2}, children={3:1})  # Multiplicity 2 from input
+        bad_graph2 = open_digraph(
+            inputs=[1],
+            outputs=[3],
+            nodes=[self.input_node, bad_node_A, self.output_node]
+        )
+        with self.assertRaises(AssertionError):
+            bad_graph2.assert_is_well_formed()
+        
+        # Case 3: Output node has multiple parents
+        bad_output_node = node(identity=3, label='output', parents={2:1, 4:1}, children={})
+        bad_graph3 = open_digraph(
+            inputs=[1],
+            outputs=[3],
+            nodes=[self.input_node, self.node_A, bad_output_node]
+        )
+        with self.assertRaises(AssertionError):
+            bad_graph3.assert_is_well_formed()
+
+    def test_add_remove_node_preserves_well_formedness(self):
+        """
+        Test that adding and removing nodes maintains the graph's well-formedness.
+        """
+        graph = self.good_graph.copy()
+        graph.assert_is_well_formed()
+        
+        # Add a new node B (id=4) connected from A to output
+        new_id = graph.add_node()
+        graph.add_edge(new_id, 2)
+        
+        # Update outputs to include node B's child if necessary
+        # In this case, output node remains the same
+        graph.assert_is_well_formed()
+        
+        # Remove node B
+        graph.remove_node_by_id(4)
+        graph.assert_is_well_formed()
+
+    def test_add_remove_edge_preserves_well_formedness(self):
+        """
+        Test that adding and removing edges (excluding those involving input/output nodes) maintains well-formedness.
+        """
+        graph = self.good_graph.copy()
+        graph.assert_is_well_formed()
+        
+        # Add a loop edge on node A (id=2)
+        graph.add_edge(2, 2)
+        graph.assert_is_well_formed()
+        
+        # Remove the loop edge
+        graph.remove_edge(2, 2)
+        graph.assert_is_well_formed()
+        
+        # Add an edge from A to a new node (id=4) and ensure it's handled correctly
+        new_id = graph.add_node('')
+        graph.add_edge(new_id, 2)
+        graph.assert_is_well_formed()
+        
+        # Remove the edge from A to C
+        graph.remove_edge(2, 4)
+        graph.assert_is_well_formed()
+
+    def test_add_input_output_preserves_well_formedness(self):
+        """
+        Test that adding input and output nodes via provided methods maintains the graph's well-formedness.
+        """
+        graph = open_digraph.empty()
+        
+        # Add primary nodes A (id=1) and B (id=2)
+        node_A = node(identity=1, label='A', parents={}, children={2:1})
+        node_B = node(identity=2, label='B', parents={1:1}, children={})
+        graph.nodes = {1: node_A, 2: node_B}
+        
+        # Add edge A -> B
+        graph.add_edge(1, 2)
+        
+        # Add input node pointing to A
+        input_id = graph.add_input_node(1)
+        self.assertNotEqual(input_id, -1, "Failed to add input node.")
+        graph.assert_is_well_formed()
+        
+        # Add output node pointing from B
+        output_id = graph.add_output_node(2)
+        self.assertNotEqual(output_id, -1, "Failed to add output node.")
+        graph.assert_is_well_formed()
+        
+        # Remove input node
+        graph.remove_node_by_id(input_id)
+        graph.assert_is_well_formed()
+        
+        # Remove output node
+        graph.remove_node_by_id(output_id)
+        graph.assert_is_well_formed()
+
+    def test_remove_nonexistent_node(self):
+        """
+        Test that removing a non-existent node does not affect the graph's well-formedness.
+        """
+        graph = self.good_graph.copy()
+        graph.assert_is_well_formed()
+        
+        # Attempt to remove a node that doesn't exist
+        graph.remove_node_by_id(999)  # Assuming 999 is not a valid node ID
+        graph.assert_is_well_formed()
+
+    def test_add_edge_with_nonexistent_nodes(self):
+        """
+        Test that adding an edge involving non-existent nodes does not alter the graph.
+        """
+        graph = self.good_graph.copy()
+        graph.assert_is_well_formed()
+        
+        # Attempt to add an edge where source node does not exist
+        result = graph.add_edge(999, 2)
+        self.assertIsNone(result, "Adding edge with nonexistent source should return None.")
+        graph.assert_is_well_formed()
+        
+        # Attempt to add an edge where target node does not exist
+        result = graph.add_edge(2, 999)
+        self.assertIsNone(result, "Adding edge with nonexistent target should return None.")
+        graph.assert_is_well_formed()
+
+    def test_add_duplicate_input_output(self):
+        """
+        Test that adding duplicate input or output nodes is handled correctly.
+        """
+        graph = self.good_graph.copy()
+        graph.assert_is_well_formed()
+        
+        # Attempt to add the same input node again
+        duplicate_input_id = graph.add_input_node(1)  # Assuming node 1 exists
+        self.assertEqual(duplicate_input_id, -1, "Adding duplicate input node should return -1.")
+        graph.assert_is_well_formed()
+        
+        # Attempt to add the same output node again
+        duplicate_output_id = graph.add_output_node(3)  # Assuming node 3 exists
+        self.assertEqual(duplicate_output_id, -1, "Adding duplicate output node should return -1.")
+        graph.assert_is_well_formed()
+
+    def test_copy_graph(self):
+        """
+        Test that copying a graph results in an identical but separate graph.
+        """
+        graph_copy = self.good_graph.copy()
+        graph_copy.assert_is_well_formed()
+        self.good_graph.assert_is_well_formed()
+        for i in self.good_graph.get_nodes_ids():
+            self.assertNotEqual(self.good_graph.get_id_node_map()[i], graph_copy.get_id_node_map()[i])
+        
+        # Modify the copy
+        new_id = graph_copy.add_node(label='B', parents={2:1}, children={3:1})
+        self.assertRaises(AssertionError, graph_copy.assert_is_well_formed)
+        
+        # Ensure original graph remains unchanged
+        self.assertNotIn(new_id, self.good_graph.get_nodes_ids(), "Original graph should not contain the new node added to the copy.")
+        self.assertNotEqual(graph_copy, self.good_graph)
+        self.good_graph.assert_is_well_formed()
 
 if __name__ == "__main__":
     unittest.main()

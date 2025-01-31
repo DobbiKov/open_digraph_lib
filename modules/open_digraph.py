@@ -1,3 +1,4 @@
+import copy
 class node:
     def __init__(self, identity, label, parents, children):
         '''
@@ -34,6 +35,7 @@ class node:
             self.parents[id] = 1
         else:
             self.parents[id] += 1
+
 
     #Removers
     def remove_parent_once(self, id):
@@ -180,6 +182,44 @@ class open_digraph: #for open directed graph
                     self.add_edge(n_id, i)
         return n_id
 
+    def add_input_node(self, point_to_id: int):
+        """
+        Adds a new input node to the graph. Carefully adds the id to input_ids list and creates an edge
+
+        Args:
+            point_to_id(int): id of the node, new input node will point to
+
+        Returns:
+            id of the new input node
+        """
+        if point_to_id not in self.get_nodes_ids():
+            return -1
+        if point_to_id in self.get_inputs_ids():
+            return -1
+        new_id = self.add_node('input', {}, {})
+        self.add_edge(new_id, point_to_id)
+        self.add_input_id(new_id)
+        return new_id
+
+    def add_output_node(self, point_from_id: int):
+        """
+        Adds a new output node to the graph. Carefully adds the id to output_ids list and creates an edge
+
+        Args:
+            point_from_id(int): id of the node that new input node will be pointed from
+
+        Returns:
+            id of the new output node
+        """
+        if point_from_id not in self.get_nodes_ids():
+            return -1
+        if point_from_id in self.get_outputs_ids():
+            return -1
+        new_id = self.add_node('output', {}, {})
+        self.add_edge(point_from_id, new_id)
+        self.add_output_id(new_id)
+        return new_id
+
     #removers
     def remove_edge(self, src, tgt):
         """
@@ -231,9 +271,9 @@ class open_digraph: #for open directed graph
         if id in self.nodes.keys():
             self.nodes.pop(id)
         if id in self.inputs:
-            self.inputs.pop(id)
+            self.inputs.remove(id)
         if id in self.outputs:
-            self.outputs.pop(id)
+            self.outputs.remove(id)
 
     def remove_edges(self, lst: list[tuple[int, int]]):
         """
@@ -324,7 +364,7 @@ class open_digraph: #for open directed graph
         Returns:
             open_digraph: A new instance with copied inputs, outputs, and nodes.
         """
-        return open_digraph(self.get_inputs_ids().copy(), self.get_outputs_ids().copy(), self.get_nodes().copy())
+        return open_digraph(self.get_inputs_ids().copy(), self.get_outputs_ids().copy(), copy.deepcopy(self.get_nodes()))
     
     def assert_is_well_formed(self):
         """
