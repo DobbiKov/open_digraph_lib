@@ -235,6 +235,18 @@ class open_digraph: #for open directed graph
         if id in self.outputs:
             self.outputs.pop(id)
 
+    def remove_edges(self, lst: list[tuple[int, int]]):
+        for (src, tgt) in lst:
+            self.remove_edge(src, tgt)
+
+    def remove_several_parallel_edges(self, lst: list[tuple[int, int]]):
+        for (src, tgt) in lst:
+            self.remove_parallel_edges(src, tgt)
+
+    def remove_nodes_by_id(self, ids: list[int]):
+        for id in ids:
+            self.remove_node_by_id(id)
+
 
     def __str__(self):
         """
