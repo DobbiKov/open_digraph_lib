@@ -147,6 +147,14 @@ class InitTest(unittest.TestCase):
         self.assertEqual(new_id, 4)
         self.assertEqual(g0.get_nodes_ids(), [0, 1, 2, 3, 4])
 
+    def test_remove_edge(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {1:3}, {})
+        g0 = open_digraph([0, 3], [2], 
+                          [n0, n1, n2, n3])
+
 class NodeTest(unittest.TestCase):
     def setUp(self):
         self.n0 = node(0, 'a', {2:2}, {1:1})
