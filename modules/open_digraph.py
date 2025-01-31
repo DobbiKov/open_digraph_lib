@@ -219,9 +219,12 @@ class open_digraph: #for open directed graph
         #removing edges
         if id not in self.get_nodes_ids():
             return
-        for i in self.get_id_node_map()[id].get_parents().keys():
+        ids_parents = list(self.get_id_node_map()[id].get_parents().keys())
+        for i in ids_parents:
             self.remove_parallel_edges(i, id)
-        for i in self.get_id_node_map()[id].get_children().keys():
+
+        ids_children = list(self.get_id_node_map()[id].get_children().keys())
+        for i in ids_children:
             self.remove_parallel_edges(id, i)
 
         #removing from lists

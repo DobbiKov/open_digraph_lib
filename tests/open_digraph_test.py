@@ -166,6 +166,47 @@ class InitTest(unittest.TestCase):
         g0 = open_digraph([0, 3], [2], 
                           [n0, n1, n2, n3])
 
+        self.assertEqual(g0.get_id_node_map(), {0:n0, 1:n1, 2:n2, 3:n3})
+        self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {1:1, 2:1})
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3})
+        self.assertEqual(g0.get_nodes_by_ids([2])[0].get_parents(), {1:1})
+        self.assertEqual(g0.get_nodes_by_ids([3])[0].get_parents(), {1:3})
+        g0.remove_edge(3, 1)
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3})
+        self.assertEqual(g0.get_nodes_by_ids([3])[0].get_parents(), {1:3})
+
+        g0.remove_edge(1, 3)
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:2})
+        self.assertEqual(g0.get_nodes_by_ids([3])[0].get_parents(), {1:2})
+
+        g0.remove_parallel_edges(1, 3)
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {})
+        self.assertEqual(g0.get_nodes_by_ids([3])[0].get_parents(), {})
+
+    def test_remove_node_by_id(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {1:1}, {})
+        n3 = node(3, 'a', {1:3}, {})
+        g0 = open_digraph([0, 3], [2, 1], 
+                          [n0, n1, n2, n3])
+        self.assertEqual(g0.get_outputs_ids(), [2, 1])
+        self.assertEqual(g0.get_id_node_map(), {0:n0, 1:n1, 2:n2, 3:n3})
+        self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {1:1, 2:1})
+        self.assertEqual(g0.get_nodes_by_ids([1])[0].get_children(), {3:3})
+        self.assertEqual(g0.get_nodes_by_ids([2])[0].get_parents(), {1:1})
+        self.assertEqual(g0.get_nodes_by_ids([3])[0].get_parents(), {1:3})
+        self.assertEqual(g0.get_nodes_ids(), [0, 1, 2, 3])
+
+        g0.remove_node_by_id(1)
+        self.assertEqual(g0.get_nodes_ids(), [0, 2, 3])
+        self.assertEqual(g0.get_nodes_by_ids([0])[0].get_children(), {2:1})
+        self.assertEqual(g0.get_nodes_by_ids([3])[0].get_parents(), {})
+        self.assertEqual(g0.get_outputs_ids(), [2])
+
+
+
+
 class NodeTest(unittest.TestCase):
     def setUp(self):
         self.n0 = node(0, 'a', {2:2}, {1:1})
