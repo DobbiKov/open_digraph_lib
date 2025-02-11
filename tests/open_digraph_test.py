@@ -537,5 +537,11 @@ class TestOpenDigraphWellFromedNess(unittest.TestCase):
         self.assertNotEqual(graph_copy, self.good_graph)
         self.good_graph.assert_is_well_formed()
 
+class TestGraphWithMatrix(unittest.TestCase):
+    def test_well_formed_from_random_matrix(self):
+        mat = random_int_matrix(5, 9)
+        g = graph_from_adjacency_matrix(mat)
+        g.assert_is_well_formed()
+
 if __name__ == "__main__":
     unittest.main()

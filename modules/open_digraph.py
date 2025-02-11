@@ -137,6 +137,9 @@ class open_digraph: #for open directed graph
 
     def new_id(self):
         ids = self.get_nodes_ids()
+        if ids == None or len(ids) == 0:
+            return 0
+
         ids = sorted(ids)
         for i in range(ids[0], ids[-1]):
             if i not in ids:
@@ -158,7 +161,7 @@ class open_digraph: #for open directed graph
             return None
         self.nodes[src].add_child_id(tgt)
         self.nodes[tgt].add_parent_id(src)
-    def add_node(self, label='', parents=None, children=None):
+    def add_node(self, label='', parents: dict[int, int] | None=None, children: dict[int, int] | None=None):
         """
         Add a new node to the graph with optional connections.
 
@@ -439,3 +442,29 @@ def random_symetric_int_matrix(n, bound, null_diag=True):
         for j in range(n):
             res[j][i] = res[i][j]
     return res
+
+def random_oriented_int_matrix(n, bound, null_diag=True):
+    res = random_int_matrix(n, bound, null_diag)
+    for i in range(n):
+        for j in range(n):
+            if res[i][j] != 0:
+                res[j][i] = 0
+    return res
+
+def random_triangular_int_matrix(n, bound, null_diag=True):
+    res = random_int_matrix(n, bound, null_diag)
+    for i in range(n):
+        for j in range(n):
+            if i > j: 
+                res[i][j] = 0
+    return res
+
+def graph_from_adjacency_matrix(mat):
+    g = open_digraph([], [], [])
+    for i in range(len(mat)):
+        g.add_node(str(i))
+    for i in range(len(mat)):
+        for j in range(len(mat[i])):
+            for k in range(mat[i][j]):
+                g.add_edge(i, j)
+    return g
