@@ -610,5 +610,9 @@ class TestGraphWithMatrix(unittest.TestCase):
         g = graph_from_adjacency_matrix(mat)
         g.assert_is_well_formed()
 
+    def test_random_graph(self):
+        g = open_digraph.random(5, 9, 1, 0, "free")
+        g.assert_is_well_formed()
+
 if __name__ == "__main__":
     unittest.main()
