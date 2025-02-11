@@ -1,4 +1,5 @@
 import copy
+import random
 class node:
     def __init__(self, identity, label, parents, children):
         '''
@@ -414,3 +415,27 @@ class open_digraph: #for open directed graph
                     f"Inconsistent multiplicity between {node.get_id()} -> {parent_id}:"
                     f"{multiplicity} (parent should have same muliplicity to child)"
                 )
+
+def random_int_list(n, bound):
+    res = []
+    for i in range(n):
+        res.append(random.randrange(0, bound))
+    return res
+
+def random_int_matrix(n, bound, null_diag=True):
+    res = []
+    for i in range(n):
+        res.append(random_int_list(n, bound))
+
+    if null_diag == True:
+        for i in range(n):
+            res[i][i] = 0
+
+    return res
+
+def random_symetric_int_matrix(n, bound, null_diag=True):
+    res = random_int_matrix(n, bound, null_diag)
+    for i in range(n):
+        for j in range(n):
+            res[j][i] = res[i][j]
+    return res
