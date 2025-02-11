@@ -418,6 +418,60 @@ class open_digraph: #for open directed graph
                     f"Inconsistent multiplicity between {node.get_id()} -> {parent_id}:"
                     f"{multiplicity} (parent should have same muliplicity to child)"
                 )
+    @classmethod
+    def random(cls, n, bound, inputs=0, outputs=0, form="free", loop_free=True):
+        mat = []
+
+
+        match form:
+            case "free":
+                mat = random_int_matrix(n, bound, loop_free)
+            case "DAG":
+                mat = random_triangular_int_matrix(n, bound, loop_free)
+            case "oriented":
+                mat = random_oriented_int_matrix(n, bound, loop_free)
+            case "undirected":
+                mat = random_symetric_int_matrix(n, bound, loop_free)
+
+        # inputs outputs
+        assert inputs + outputs <= n
+        ids = list(range(n))
+        random.shuffle(ids)
+        idx = 0
+        inputs_ids = []
+        outputs_ids = []
+        for i in range(inputs):
+            inputs_ids.append(ids[idx])
+
+            # inputs must not have any parents
+            for n_id in range(n):
+                mat[n_id][ids[idx]] = 0
+
+            for n_id in range(n):
+                if mat[ids[idx]][n_id] > 0:
+                    mat[ids[idx]][n_id] = 1 
+
+            idx += 1
+        for i in range(outputs):
+            outputs_ids.append(ids[idx])
+
+            # outpus must not have any children 
+            for n_id in range(n):
+                mat[ids[idx]][n_id] = 0
+
+            for n_id in range(n):
+                if mat[n_id][ids[idx]] > 0:
+                    mat[n_id][ids[idx]] = 1 
+            idx += 1
+
+        g = graph_from_adjacency_matrix(mat)
+
+        for i in inputs_ids:
+            g.add_input_id(i)
+        for i in outputs_ids:
+            g.add_output_id(i)
+
+        return g
 
 def random_int_list(n, bound):
     res = []
