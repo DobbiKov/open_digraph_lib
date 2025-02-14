@@ -1,0 +1,1 @@
+digraph G{subgraph inputs{rank=same;v1 [label="1" shape=diamond]}subgraph outputs{rank=same;v3 [label="3" shape=box]v4 [label="4" shape=box]}v0 [label="0" ]v2 [label="2" ]v5 [label="5" ]v0 -> v3;v1 -> v4;v2 -> v0;v2 -> v0;v2 -> v0;v2 -> v0;v2 -> v5;v2 -> v5;v5 -> v0;v5 -> v0;v5 -> v0;v5 -> v0;v5 -> v0;v5 -> v0;v5 -> v0;v5 -> v0;v5 -> v2;v5 -> v2;v5 -> v2;v5 -> v2;}

@@ -443,6 +443,7 @@ class open_digraph: #for open directed graph
         # For each input node, keep only one outgoing edge
         for i in range(inputs):
             input_id = ids[idx]
+            inputs_ids.append(input_id)
             
             # Remove incoming edges
             for n_id in range(n):
@@ -493,6 +494,46 @@ class open_digraph: #for open directed graph
             g.add_output_id(i)
 
         return g
+
+    def save_as_dot_file(self, path: str, verbose: bool = False):
+        def write_node(f, node):
+            w_id = ""
+            if verbose:
+                w_id = node.get_id()
+            f.write(f"v{node.get_id()} [label=\"{node.get_label()}{w_id}\" ")
+            if node.get_id() in self.get_inputs_ids():
+                f.write(f"shape=diamond")
+            elif node.get_id() in self.get_outputs_ids():
+                f.write(f"shape=box")
+            f.write(f"]")
+        with open(path, "w") as f:
+            f.write("digraph G{")
+
+            f.write("subgraph inputs{")
+            f.write("rank=same;")
+            for node in self.get_nodes():
+                if node.get_id() in self.get_inputs_ids():
+                    write_node(f, node)
+            f.write("}")
+
+            f.write("subgraph outputs{")
+            f.write("rank=same;")
+            for node in self.get_nodes():
+                if node.get_id() in self.get_outputs_ids():
+                    write_node(f, node)
+            f.write("}")
+
+            for node in self.get_nodes():
+                if node.get_id() in self.get_outputs_ids() or node.get_id() in self.get_inputs_ids():
+                    continue
+                write_node(f, node)
+
+            for node in self.get_nodes():
+                for child in node.get_children().keys():
+                    for i in range(node.get_children()[child]):
+                        f.write(f"v{node.get_id()} -> v{int(child)};")
+            f.write("}")
+            f.close()
 
 def random_int_list(n, bound):
     res = []

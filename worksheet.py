@@ -26,16 +26,18 @@ print(dir(node))
 #     [0,1,2], [9], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
 # )
 
-n0 = node(0, '0i', {3:1}, {1:1, 2:1})
+n0 = node(0, '0i', {3:1}, {1:1, 2:2})
 n1 = node(1, '1i', {0:1}, {3:3})
-n2 = node(2, '2o', {0:1}, {})
+n2 = node(2, '2o', {0:2}, {})
 n3 = node(3, '3a', {1:3, 4:1}, {0:1})
 n4 = node(4, '4i', {}, {3:1})
 graph = open_digraph([4], [2], 
                   [n0, n1, n2, n3, n4])
 
-graph = open_digraph.random(5, 9, 1, 1)
 #
-dot = vizualize_graph(graph)
+graph = open_digraph.random(6, 9, 1, 2)
+# dot = vizualize_graph(graph)
+#
+# dot.render('graph', view=True)
 
-dot.render('graph', view=True)
+graph.save_as_dot_file("./dot.dot")
