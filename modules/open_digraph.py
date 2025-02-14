@@ -493,6 +493,40 @@ class open_digraph: #for open directed graph
             g.add_output_id(i)
 
         return g
+    
+    @classmethod
+    def from_dot_file(cls, path : str, verbose = False):
+        graph = cls.empty()
+        with open(path, 'r') as f:
+            lines = f.readlines()
+            f.close()
+            nodes = {}
+            for line in lines:
+                line = line.strip()
+                if '->' in line:
+                    src, tgt = line.split('->')
+                    src = int(src.strip())
+                    tgt = int(tgt.strip().strip(';'))
+                    if src not in nodes:
+                        nodes[src] = node(src, str(src), {}, {})
+                    if tgt not in nodes:
+                        nodes[tgt] = node(tgt, str(tgt), {}, {})
+                    nodes[src].add_child_id(tgt)
+                    nodes[tgt].add_parent_id(src)
+                elif '[label=' in line:
+                    node_id, label = line.split('[label=')
+                    node_id = int(node_id.strip())
+                    label = label.strip().strip('"];')
+                    if node_id not in nodes:
+                        nodes[node_id] = node(node_id, label, {}, {})
+                    else:
+                        nodes[node_id].set_label(label)
+            graph.set_nodes(nodes)
+            graph.set_inputs([node_id for node_id in nodes if len(nodes[node_id].get_parents()) == 0])
+            graph.set_outputs([node_id for node_id in nodes if len(nodes[node_id].get_children()) == 0])
+            return graph
+            
+
 
 def random_int_list(n, bound):
     res = []
