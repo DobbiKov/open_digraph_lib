@@ -434,63 +434,12 @@ class open_digraph: #for open directed graph
                 mat = random_symetric_int_matrix(n, bound, loop_free)
 
         # inputs outputs
-        assert inputs + outputs <= n
-        ids = list(range(n))
-        random.shuffle(ids)
-        idx = 0
-        inputs_ids = []
-        outputs_ids = []
-        # For each input node, keep only one outgoing edge
-        for i in range(inputs):
-            input_id = ids[idx]
-            
-            # Remove incoming edges
-            for n_id in range(n):
-                mat[n_id][input_id] = 0
-            
-            # Find all outgoing edges (children)
-            children = [j for j in range(n) if mat[input_id][j] > 0]
-            
-            if children:
-                # Randomly select one child to keep
-                chosen_child = random.choice(children)
-                # Zero out all outgoing edges
-                for j in range(n):
-                    mat[input_id][j] = 0
-                # Set the chosen edge to 1
-                mat[input_id][chosen_child] = 1
-            
-            idx += 1
-        for i in range(outputs):
-            outputs_ids.append(ids[idx])
-
-            # Outputs must not have any children: clear the entire row.
-            for n_id in range(n):
-                mat[ids[idx]][n_id] = 0
-
-            # Get all the parent candidates (incoming connections) for this output node.
-            parent_candidates = [j for j in range(n) if mat[j][ids[idx]] > 0]
-
-            if parent_candidates:
-                # Randomly choose one parent.
-                chosen_parent = random.choice(parent_candidates)
-
-                # Remove all incoming edges.
-                for j in range(n):
-                    mat[j][ids[idx]] = 0
-
-                # Set only the chosen parent's connection.
-                mat[chosen_parent][ids[idx]] = 1
-
-            idx += 1
-
-        print(mat)
         g = graph_from_adjacency_matrix(mat)
 
-        for i in inputs_ids:
-            g.add_input_id(i)
-        for i in outputs_ids:
-            g.add_output_id(i)
+        for i in range(inputs):
+            g.add_input_node(random.randrange(n))
+        for i in range(outputs):
+            g.add_output_node(random.randrange(n))
 
         return g
     
@@ -527,6 +476,47 @@ class open_digraph: #for open directed graph
             return graph
             
 
+
+    def save_as_dot_file(self, path: str, verbose: bool = False):
+        def write_node(f, node):
+            w_id = ""
+            if verbose:
+                w_id = node.get_id()
+            f.write(f"v{node.get_id()} [label=\"{node.get_label()}{w_id}\" ")
+            if node.get_id() in self.get_inputs_ids():
+                f.write(f"shape=diamond")
+            elif node.get_id() in self.get_outputs_ids():
+                f.write(f"shape=box")
+            f.write(f"]\n")
+
+        with open(path, "w") as f:
+            f.write("digraph G{\n")
+
+            f.write("subgraph inputs{\n")
+            f.write("rank=same;\n")
+            for node in self.get_nodes():
+                if node.get_id() in self.get_inputs_ids():
+                    write_node(f, node)
+            f.write("}\n")
+
+            f.write("subgraph outputs{\n")
+            f.write("rank=same;\n")
+            for node in self.get_nodes():
+                if node.get_id() in self.get_outputs_ids():
+                    write_node(f, node)
+            f.write("}\n")
+
+            for node in self.get_nodes():
+                if node.get_id() in self.get_outputs_ids() or node.get_id() in self.get_inputs_ids():
+                    continue
+                write_node(f, node)
+
+            for node in self.get_nodes():
+                for child in node.get_children().keys():
+                    for i in range(node.get_children()[child]):
+                        f.write(f"v{node.get_id()} -> v{int(child)};\n")
+            f.write("}\n")
+            f.close()
 
 def random_int_list(n, bound):
     res = []
