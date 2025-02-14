@@ -256,7 +256,6 @@ class InitTest(unittest.TestCase):
         self.assertEqual(g0.get_id_node_map()[5].get_parents(), {3:1})
         g0.assert_is_well_formed()
 
-
 class NodeTest(unittest.TestCase):
     def setUp(self):
         self.n0 = node(0, 'a', {2:2}, {1:1})
@@ -538,6 +537,74 @@ class TestOpenDigraphWellFromedNess(unittest.TestCase):
         self.good_graph.assert_is_well_formed()
 
 class TestGraphWithMatrix(unittest.TestCase):
+    def test_random_int_matrix(self):
+        for i in range(10):
+            mat = random_int_matrix(10, 10)
+            for row_idx, row in enumerate(mat):
+                for col_idx, e in enumerate(row):
+                    self.assertTrue(e >= 0 and e < 10)
+                    if row_idx == col_idx:
+                        self.assertEqual(e, 0)
+
+    def test_random_symetric_int_matrix(self):
+        for i in range(10):
+            mat = random_symetric_int_matrix(10, 10)
+            for row_idx, row in enumerate(mat):
+                for col_idx, e in enumerate(row):
+                    self.assertEqual(mat[row_idx][col_idx], mat[col_idx][row_idx])
+                for e in mat[row_idx]:
+                    self.assertTrue(e >= 0 and e < 10)
+
+
+    def test_random_oriented_int_matrix(self):
+        for i in range(10):
+            mat = random_oriented_int_matrix(10, 10)
+            for row_idx, row in enumerate(mat):
+                for col_idx, e in enumerate(row):
+                    self.assertTrue(e >= 0 and e < 10)
+                    if row_idx == col_idx:
+                        self.assertEqual(e, 0)
+                    if e != 0:
+                        self.assertEqual(mat[col_idx][row_idx], 0)
+
+    def test_random_triangular_int_matrix(self):
+        for i in range(10):
+            mat = random_triangular_int_matrix(10, 10)
+            for row_idx, row in enumerate(mat):
+                for col_idx, e in enumerate(row):
+                    self.assertTrue(e >= 0 and e < 10)
+                    if row_idx == col_idx:
+                        self.assertEqual(e, 0)
+                    if row_idx > col_idx:
+                        self.assertEqual(e, 0)
+
+    def test_graph_from_adjacency_matrix(self):
+        mat = [
+            [0, 1, 0],
+            [0, 0, 1],
+            [1, 0, 0]
+        ]
+        g = graph_from_adjacency_matrix(mat)
+        g.assert_is_well_formed()
+
+    def test_graph_from_empty_adjacency_matrix(self):
+        mat = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ]
+        g = graph_from_adjacency_matrix(mat)
+        g.assert_is_well_formed()
+    
+    def test_random_symetric_int_matrix(self):
+        for i in range(10):
+            mat = random_symetric_int_matrix(10, 10)
+            for i in range(10):
+                for j in range(10):
+                    self.assertEqual(mat[i][j], mat[j][i])
+                for e in mat[i]:
+                    self.assertTrue(e >= 0 and e < 10)
+
     def test_well_formed_from_random_matrix(self):
         mat = random_int_matrix(5, 9)
         g = graph_from_adjacency_matrix(mat)
