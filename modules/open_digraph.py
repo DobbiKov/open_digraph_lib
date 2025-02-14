@@ -453,23 +453,24 @@ class open_digraph: #for open directed graph
                 f.write(f"shape=diamond")
             elif node.get_id() in self.get_outputs_ids():
                 f.write(f"shape=box")
-            f.write(f"]")
-        with open(path, "w") as f:
-            f.write("digraph G{")
+            f.write(f"]\n")
 
-            f.write("subgraph inputs{")
-            f.write("rank=same;")
+        with open(path, "w") as f:
+            f.write("digraph G{\n")
+
+            f.write("subgraph inputs{\n")
+            f.write("rank=same;\n")
             for node in self.get_nodes():
                 if node.get_id() in self.get_inputs_ids():
                     write_node(f, node)
-            f.write("}")
+            f.write("}\n")
 
-            f.write("subgraph outputs{")
-            f.write("rank=same;")
+            f.write("subgraph outputs{\n")
+            f.write("rank=same;\n")
             for node in self.get_nodes():
                 if node.get_id() in self.get_outputs_ids():
                     write_node(f, node)
-            f.write("}")
+            f.write("}\n")
 
             for node in self.get_nodes():
                 if node.get_id() in self.get_outputs_ids() or node.get_id() in self.get_inputs_ids():
@@ -479,8 +480,8 @@ class open_digraph: #for open directed graph
             for node in self.get_nodes():
                 for child in node.get_children().keys():
                     for i in range(node.get_children()[child]):
-                        f.write(f"v{node.get_id()} -> v{int(child)};")
-            f.write("}")
+                        f.write(f"v{node.get_id()} -> v{int(child)};\n")
+            f.write("}\n")
             f.close()
 
 def random_int_list(n, bound):
