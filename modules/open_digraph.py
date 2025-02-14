@@ -440,30 +440,51 @@ class open_digraph: #for open directed graph
         idx = 0
         inputs_ids = []
         outputs_ids = []
+        # For each input node, keep only one outgoing edge
         for i in range(inputs):
-            inputs_ids.append(ids[idx])
-
-            # inputs must not have any parents
+            input_id = ids[idx]
+            
+            # Remove incoming edges
             for n_id in range(n):
-                mat[n_id][ids[idx]] = 0
-
-            for n_id in range(n):
-                if mat[ids[idx]][n_id] > 0:
-                    mat[ids[idx]][n_id] = 1 
-
+                mat[n_id][input_id] = 0
+            
+            # Find all outgoing edges (children)
+            children = [j for j in range(n) if mat[input_id][j] > 0]
+            
+            if children:
+                # Randomly select one child to keep
+                chosen_child = random.choice(children)
+                # Zero out all outgoing edges
+                for j in range(n):
+                    mat[input_id][j] = 0
+                # Set the chosen edge to 1
+                mat[input_id][chosen_child] = 1
+            
             idx += 1
         for i in range(outputs):
             outputs_ids.append(ids[idx])
 
-            # outpus must not have any children 
+            # Outputs must not have any children: clear the entire row.
             for n_id in range(n):
                 mat[ids[idx]][n_id] = 0
 
-            for n_id in range(n):
-                if mat[n_id][ids[idx]] > 0:
-                    mat[n_id][ids[idx]] = 1 
+            # Get all the parent candidates (incoming connections) for this output node.
+            parent_candidates = [j for j in range(n) if mat[j][ids[idx]] > 0]
+
+            if parent_candidates:
+                # Randomly choose one parent.
+                chosen_parent = random.choice(parent_candidates)
+
+                # Remove all incoming edges.
+                for j in range(n):
+                    mat[j][ids[idx]] = 0
+
+                # Set only the chosen parent's connection.
+                mat[chosen_parent][ids[idx]] = 1
+
             idx += 1
 
+        print(mat)
         g = graph_from_adjacency_matrix(mat)
 
         for i in inputs_ids:

@@ -33,6 +33,8 @@ n3 = node(3, '3a', {1:3, 4:1}, {0:1})
 n4 = node(4, '4i', {}, {3:1})
 graph = open_digraph([4], [2], 
                   [n0, n1, n2, n3, n4])
+
+graph = open_digraph.random(5, 9, 1, 1)
 #
 dot = vizualize_graph(graph)
 

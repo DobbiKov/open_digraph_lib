@@ -547,5 +547,8 @@ class TestGraphWithMatrix(unittest.TestCase):
         g = open_digraph.random(5, 9, 1, 0, "free")
         g.assert_is_well_formed()
 
+        g = open_digraph.random(5, 9, 3, 2, "free")
+        g.assert_is_well_formed()
+
 if __name__ == "__main__":
     unittest.main()
