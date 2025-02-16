@@ -596,8 +596,8 @@ class open_digraph: #for open directed graph
             f.write("}\n")
             f.close()
 
-def random_int(bound, start=0, number_generator = (lambda: random.uniform(0, 1))):
-    return start + (bound-start)*random.random(number_generator)
+def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))):
+    return int(start + (bound-start)*number_generator())
 
 def random_int_list(n, bound, number_generator = (lambda: random.betavariate(1, 5))):
     res = []
