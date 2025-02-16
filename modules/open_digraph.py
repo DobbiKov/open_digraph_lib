@@ -125,6 +125,9 @@ class open_digraph: #for open directed graph
     def get_nodes_by_ids(self, ids):
         return [self.get_id_node_map()[i] for i in ids]
 
+    def get_id_int_mapping(self):
+        return {k: i for i, k in enumerate(self.get_id_node_map())}
+
     #Setters
     def set_inputs(self, inputs): self.inputs = inputs
     def set_outputs(self, outputs): self.outputs = outputs
@@ -482,10 +485,21 @@ class open_digraph: #for open directed graph
                     f"Inconsistent multiplicity between {node.get_id()} -> {parent_id}:"
                     f"{multiplicity} (parent should have same muliplicity to child)"
                 )
+    def adjacancy_matrix(self):
+        '''
+        **Creates an adjacancy matrix corresponding to the graph**
+        '''
+        map = self.get_id_int_mapping()
+        n = len(map)
+        res = [[0 for _ in range(n)] for _ in range(n)]
+        for k, v in map.items():
+            for c in self[k].get_children().items():
+                res[v][map[c]]+=1
+        return res
+
     @classmethod
     def random(cls, n, bound, inputs=0, outputs=0, form="free", loop_free=True):
         mat = []
-
 
         match form:
             case "free":
@@ -582,16 +596,26 @@ class open_digraph: #for open directed graph
             f.write("}\n")
             f.close()
 
-def random_int_list(n, bound):
+def random_int(bound, start=0, number_generator = (lambda: random.uniform(0, 1))):
+    return start + (bound-start)*random.random(number_generator)
+
+def random_int_list(n, bound, number_generator = (lambda: random.betavariate(1, 5))):
     res = []
     for i in range(n):
-        res.append(random.randrange(0, bound))
+        res.append(random_int(bound, number_generator=number_generator))
     return res
 
-def random_int_matrix(n, bound, null_diag=True):
+def random_int_matrix(n, bound, null_diag=True, number_generator = (lambda: random.betavariate(1, 5))):
+    # Suggestion allocate all the needed space, to save time on list resizing on appends
+    # res = [[0 for _ in range(n)] for _ in range(n)]
+    # for i in range(n):
+    #     for j in range(n):
+    #         res[i][j] =  random_int(bound, number_generator=number_generator)
+
     res = []
     for i in range(n):
-        res.append(random_int_list(n, bound))
+        res.append(random_int_list(n, bound, number_generator=number_generator))
+
 
     if null_diag == True:
         for i in range(n):
@@ -599,27 +623,44 @@ def random_int_matrix(n, bound, null_diag=True):
 
     return res
 
-def random_symetric_int_matrix(n, bound, null_diag=True):
-    res = random_int_matrix(n, bound, null_diag)
+def random_symetric_int_matrix(n, bound, null_diag=True,  number_generator = (lambda: random.betavariate(1, 5))):
+    #Suggestion, directly generate the numbers, and assign to the 2 positions at the same time
+    # res = [[0 for _ in range(n)] for _ in range(n)]
+    # c = not null_diag # when null_diag is true, we will fill all the numbers before i=j, otherwize i=j included
+    # for i in range(n):
+    #     for j in range(i+c):
+    #         v = random_int(bound, number_generator=number_generator)
+    #         res[i][j] = v
+    #         res[j][i] = v
+
+
+    res = random_int_matrix(n, bound, null_diag, number_generator=number_generator)
     for i in range(n):
         for j in range(n):
             res[j][i] = res[i][j]
     return res
 
-def random_oriented_int_matrix(n, bound, null_diag=True):
-    res = random_int_matrix(n, bound, null_diag)
+def random_oriented_int_matrix(n, bound, null_diag=True, number_generator = (lambda: random.betavariate(1, 5))):
+    res = random_int_matrix(n, bound, null_diag, number_generator=number_generator)
     for i in range(n):
         for j in range(n):
             if res[i][j] != 0:
                 res[j][i] = 0
     return res
 
-def random_triangular_int_matrix(n, bound, null_diag=True):
-    res = random_int_matrix(n, bound, null_diag)
+def random_triangular_int_matrix(n, bound, null_diag=True, number_generator = (lambda: random.betavariate(1, 5))):
+    # Suggestion: Avoid multiple matrix traversals by directly generating a triangular matrix
+    # res = [[0 for _ in range(n)] for _ in range(n)]
+    # for i in range(n):
+    #     for j in range(i+ null_diag, n):
+    #         res[i][j] = random_int(bound, number_generator=number_generator)
+
+    res = random_int_matrix(n, bound, null_diag, number_generator=number_generator)
+    c = int(not null_diag) #For null_diag see random_symmetric_int_matrix
     for i in range(n):
-        for j in range(n):
-            if i > j: 
-                res[i][j] = 0
+        for j in range(i+ c):
+            # if i > j: 
+            res[i][j] = 0
     return res
 
 def graph_from_adjacency_matrix(mat):
