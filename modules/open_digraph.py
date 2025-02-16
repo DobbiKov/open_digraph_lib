@@ -389,13 +389,58 @@ class open_digraph: #for open directed graph
         """
         return open_digraph(self.get_inputs_ids().copy(), self.get_outputs_ids().copy(), copy.deepcopy(self.get_nodes()))
     
+    def is_well_formed(self):
+        # Or well 
+        # try:
+        #     self.assert_is_well_formed()
+        #     return True
+        # except:
+        #     return False
+        node_ids = set(self.get_id_node_map().keys())
+
+        for input_id in self.get_inputs_ids():
+            if not input_id in node_ids: return False
+        for output_id in self.get_outputs_ids():
+            if not output_id in node_ids: return False
+
+        for input_id in self.get_inputs_ids():
+            input_node = self.get_id_node_map()[input_id]
+            if len(input_node.get_parents()) == 0: return False
+            if len(input_node.get_children()) == 1: return False
+            child_id, multiplicity = next(iter(input_node.get_children().items()))
+            if multiplicity == 1: return False
+
+        for output_id in self.get_outputs_ids():
+            output_node = self.get_id_node_map()[output_id]
+            if len(output_node.get_parents()) == 1: return False
+            if len(output_node.get_children()) == 0: return False
+            parent_id, multiplicity = next(iter(output_node.get_parents().items()))
+            if multiplicity == 1: return False
+
+        for node_id, node in self.get_id_node_map().items():
+            if node.get_id() == node_id: return False
+
+        for node in self.get_nodes():
+            for child_id, multiplicity in node.get_children().items():
+                if child_id in self.get_id_node_map(): return False
+                child_node = self.get_id_node_map()[child_id]
+                if node.get_id() in child_node.get_parents(): return False
+                if child_node.get_parents()[node.get_id()] == multiplicity: return False 
+            for parent_id, multiplicity in node.get_parents().items():
+                if parent_id in self.get_id_node_map(): return False
+                parent_node = self.get_id_node_map()[parent_id]
+                if node.get_id() in parent_node.get_children(): return False
+                if parent_node.get_children()[node.get_id()] == multiplicity: return False
+        return True
+
+
     def assert_is_well_formed(self):
         """
         check if the open directed graph is well-formed.
 
         raises an assertion error if any condition is violated.
         """
-
+        # We redo the checks for more informative error messages, alternatively can return from is_well_formed method, but not practical
         node_ids = set(self.get_id_node_map().keys())
 
         for input_id in self.get_inputs_ids():
