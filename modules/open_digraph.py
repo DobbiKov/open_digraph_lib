@@ -136,6 +136,10 @@ class open_digraph: #for open directed graph
         self.outputs.append(id)
 
     def new_id(self):
+        # Proposing simpler code 
+        # Les optimal in sens of utilizing all possible ids, but faster
+        # return max(self.get_nodes_ids())+1
+
         ids = self.get_nodes_ids()
         if ids == None or len(ids) == 0:
             return 0
@@ -161,6 +165,11 @@ class open_digraph: #for open directed graph
             return None
         self.nodes[src].add_child_id(tgt)
         self.nodes[tgt].add_parent_id(src)
+
+    def add_edges(self, edges):
+        for src, tgt in edges:
+            self.add_edge(src, tgt)
+    
     def add_node(self, label='', parents: dict[int, int] | None=None, children: dict[int, int] | None=None):
         """
         Add a new node to the graph with optional connections.
@@ -176,6 +185,16 @@ class open_digraph: #for open directed graph
         n_id = self.new_id()
         n = node(n_id, label, {}, {})
         self.nodes[n_id] = n
+        # Suggestion/interpretation 
+        # Parents and children can be just lists of ids of parents and children respectively, 
+        # as a node can have list of parents and list of children, and their multiplicities do not play a role
+        # if parents !=None:
+        #     self.add_edges(zip(parents, [n_id for _ in range(len(parents))]))
+        # if children != None:
+        #     self.add_edges(zip([n_id]*len(children), children))
+        # return n_id
+        # End of suggestion
+
         if parents != None:
             for i in parents.keys():
                 for j in range(parents[i]): #we add as many edges as we have multiplicities
