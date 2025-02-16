@@ -457,8 +457,8 @@ class open_digraph: #for open directed graph
         n = len(map)
         res = [[0 for _ in range(n)] for _ in range(n)]
         for k, v in map.items():
-            for c in self[k].get_children().items():
-                res[v][map[c]]+=1
+            for c, c_n in self.get_id_node_map()[k].get_children().items():
+                res[v][map[c]]+=c_n
         return res
 
     @classmethod
