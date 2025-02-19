@@ -494,6 +494,8 @@ class open_digraph: #for open directed graph
             lines = f.readlines()
             f.close()
             nodes = {}
+            inputs = []
+            outputs = []
             for line in lines:
                 line = line.strip()
                 if '->' in line:
@@ -506,6 +508,15 @@ class open_digraph: #for open directed graph
                         nodes[tgt] = node(tgt, str(tgt), {}, {})
                     nodes[src].add_child_id(tgt)
                     nodes[tgt].add_parent_id(src)
+                elif 'label="input"' in line:
+                    parts = line.split(' ')
+                    node_id = int(parts[0].strip().lstrip('v'))
+                    inputs.append(node_id)
+                elif 'label="output"' in line:
+                    parts = line.split(' ')
+                    node_id = int(parts[0].strip().lstrip('v'))
+                    outputs.append(node_id)
+
                 elif '[label=' in line:
                     node_id, label = line.split('[label=')
                     node_id = int(node_id.strip().lstrip('v'))
@@ -519,8 +530,8 @@ class open_digraph: #for open directed graph
                     else:
                         nodes[node_id].set_label(label)
             graph.nodes = nodes
-            graph.set_inputs([node_id for node_id in nodes if len(nodes[node_id].get_parents()) == 0])
-            graph.set_outputs([node_id for node_id in nodes if len(nodes[node_id].get_children()) == 0])
+            graph.set_inputs(inputs)
+            graph.set_outputs(outputs)
             return graph
             
 
