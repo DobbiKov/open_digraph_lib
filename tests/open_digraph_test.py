@@ -546,7 +546,7 @@ class TestGraphWithMatrix(unittest.TestCase):
                     if row_idx == col_idx:
                         self.assertEqual(e, 0)
 
-    def test_random_symetric_int_matrix(self):
+    def test_random_symetric_int_matrix2(self):
         for i in range(10):
             mat = random_symetric_int_matrix(10, 10)
             for row_idx, row in enumerate(mat):
@@ -617,6 +617,32 @@ class TestGraphWithMatrix(unittest.TestCase):
         g = open_digraph.random(5, 9, 3, 2, "free")
         g.assert_is_well_formed()
 
+    def test_graph_to_adjecancy_matrix(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {0:1}, {})
+        n3 = node(3, 'a', {1:3, 4:1}, {})
+        n4 = node(4, 'i', {}, {3:1})
+        g0 = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+        mat = g0.adjacancy_matrix()
+        self.assertEqual(mat[0][1], 1)
+        self.assertEqual(mat[0][2], 1)
+        self.assertEqual(mat[1][3], 3)
+        self.assertEqual(mat[4][3], 1)
+
+        self.assertEqual(mat[4][2], 0)
+        self.assertEqual(mat[4][4], 0)
+        self.assertEqual(mat[4][1], 0)
+        self.assertEqual(mat[0][3], 0)
+        self.assertEqual(mat[0][4], 0)
+        self.assertEqual(mat[1][4], 0)
+        self.assertEqual(mat[1][2], 0)
+        self.assertEqual(mat[1][1], 0)
+        self.assertEqual(mat[1][0], 0)
+        for i in range(2, 4):
+            for j in range(5):
+                self.assertEqual(mat[i][j], 0)
 
 if __name__ == "__main__":
     unittest.main()

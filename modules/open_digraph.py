@@ -125,8 +125,8 @@ class open_digraph: #for open directed graph
     def get_nodes_by_ids(self, ids):
         return [self.get_id_node_map()[i] for i in ids]
 
-    def get_id_int_mapping(self):
-        return {k: i for i, k in enumerate(self.get_id_node_map())}
+    def get_node_id_to_enumerate_mapping(self):
+        return {node_id: id for id, node_id in enumerate(self.get_id_node_map())}
 
     #Setters
     def set_inputs(self, inputs): self.inputs = inputs
@@ -368,7 +368,7 @@ class open_digraph: #for open directed graph
         res+="\n"
 
         res += "\tAll nodes:\n"
-        for n_idx, node in self.get_nodes().items():
+        for node in self.get_nodes():
             res += f"\t\t{node.get_id()} - {node.get_label()}\n"
         return res
     def __repr__(self):
@@ -449,16 +449,18 @@ class open_digraph: #for open directed graph
                     f"{multiplicity} (parent should have same muliplicity to child)"
                 )
 
+
     def adjacancy_matrix(self):
         '''
         **Creates an adjacancy matrix corresponding to the graph**
         '''
-        map = self.get_id_int_mapping()
+        #TODO
+        map = self.get_node_id_to_enumerate_mapping()
         n = len(map)
         res = [[0 for _ in range(n)] for _ in range(n)]
-        for k, v in map.items():
-            for c, c_n in self.get_id_node_map()[k].get_children().items():
-                res[v][map[c]]+=c_n
+        for node_id, mat_id in map.items():
+            for c_id, c_mult in self.get_id_node_map()[node_id].get_children().items():
+                res[mat_id][map[c_id]]+=c_mult
         return res
 
     @classmethod
