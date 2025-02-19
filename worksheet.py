@@ -41,3 +41,8 @@ graph = open_digraph.random(6, 9, 1, 2)
 # dot.render('graph', view=True)
 
 graph.save_as_dot_file("./dot.dot")
+
+
+graphNew = open_digraph.from_dot_file("./dot.dot")
+
+graphNew.save_as_dot_file("./dotNew.dot")

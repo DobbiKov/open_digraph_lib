@@ -454,8 +454,8 @@ class open_digraph: #for open directed graph
                 line = line.strip()
                 if '->' in line:
                     src, tgt = line.split('->')
-                    src = int(src.strip())
-                    tgt = int(tgt.strip().strip(';'))
+                    src = int(src.strip().strip('v'))
+                    tgt = int(tgt.strip().strip(';').strip('v'))
                     if src not in nodes:
                         nodes[src] = node(src, str(src), {}, {})
                     if tgt not in nodes:
@@ -464,13 +464,17 @@ class open_digraph: #for open directed graph
                     nodes[tgt].add_parent_id(src)
                 elif '[label=' in line:
                     node_id, label = line.split('[label=')
-                    node_id = int(node_id.strip())
-                    label = label.strip().strip('"];')
+                    node_id = int(node_id.strip().lstrip('v'))
+                    parts = label.split('"')
+                    if len(parts) >= 2:
+                        label = parts[1].strip()
+                    else:
+                        label = label.strip().strip('[];')
                     if node_id not in nodes:
                         nodes[node_id] = node(node_id, label, {}, {})
                     else:
                         nodes[node_id].set_label(label)
-            graph.set_nodes(nodes)
+            graph.nodes = nodes
             graph.set_inputs([node_id for node_id in nodes if len(nodes[node_id].get_parents()) == 0])
             graph.set_outputs([node_id for node_id in nodes if len(nodes[node_id].get_children()) == 0])
             return graph
