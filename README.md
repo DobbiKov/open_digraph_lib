@@ -1,4 +1,4 @@
-# Projet Math-Info
+# Open Digraph library written in python
 
 ## Authors:
 - Yehor Korotenko (yehor.korotenko@etu-upsaclay.fr)
