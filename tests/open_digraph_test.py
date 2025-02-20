@@ -623,7 +623,7 @@ class TestGraphWithMatrix(unittest.TestCase):
         n2 = node(2, 'o', {0:1}, {})
         n3 = node(3, 'a', {1:3, 4:1}, {})
         n4 = node(4, 'i', {}, {3:1})
-        g0 = open_digraph([4], [2], 
+        g0 = open_digraph([], [], 
                           [n0, n1, n2, n3, n4])
         mat = g0.adjacancy_matrix()
         self.assertEqual(mat[0][1], 1)
@@ -643,6 +643,74 @@ class TestGraphWithMatrix(unittest.TestCase):
         for i in range(2, 4):
             for j in range(5):
                 self.assertEqual(mat[i][j], 0)
+
+    def test_graph_to_adjecancy_matrix_with_io(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {0:1}, {})
+        n3 = node(3, 'a', {1:3, 4:1}, {})
+        n4 = node(4, 'i', {}, {3:1})
+        g0 = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+        mat = g0.adjacancy_matrix()
+        self.assertEqual(mat[0][1], 1)
+        self.assertEqual(mat[0][0], 0)
+        self.assertEqual(mat[0][2], 0)
+
+        self.assertEqual(mat[1][2], 3)
+        self.assertEqual(mat[1][1], 0)
+        self.assertEqual(mat[1][0], 0)
+
+        self.assertEqual(mat[2][2], 0)
+        self.assertEqual(mat[2][1], 0)
+        self.assertEqual(mat[2][0], 0)
+
+    def test_get_node_id_to_enumerate_mapping(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {0:1}, {})
+        n3 = node(3, 'a', {1:3, 4:1}, {})
+        n4 = node(4, 'i', {}, {3:1})
+        g0 = open_digraph([], [], 
+                          [n0, n1, n2, n3, n4])
+        mapping = g0.get_node_id_to_enumerate_mapping()
+        for node_id in g0.get_nodes_ids():
+            self.assertEqual(node_id in mapping.keys(), True)
+        self.assertEqual(len(mapping.keys()), len(g0.get_nodes()))
+
+        new_id = g0.add_input_node(3)
+
+        mapping = g0.get_node_id_to_enumerate_mapping()
+        self.assertEqual(len(mapping.keys()), len(g0.get_nodes()))
+        self.assertEqual(new_id in mapping.keys(), True)
+
+        mapping = g0.get_node_id_to_enumerate_mapping(True, False)
+        self.assertNotEqual(len(mapping.keys()), len(g0.get_nodes()))
+        self.assertFalse(new_id in mapping.keys())
+
+    def test_get_node_id_to_enumerate_mapping2(self):
+        n0 = node(0, 'i', {}, {1:1, 2:1})
+        n1 = node(1, 'i', {0:1}, {3:3})
+        n2 = node(2, 'o', {0:1}, {})
+        n3 = node(3, 'a', {1:3, 4:1}, {})
+        n4 = node(4, 'i', {}, {3:1})
+        g0 = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+        mapping = g0.get_node_id_to_enumerate_mapping()
+        for node_id in g0.get_nodes_ids():
+            self.assertEqual(node_id in mapping.keys(), True)
+        self.assertEqual(len(mapping.keys()), len(g0.get_nodes()))
+
+        self.assertEqual(4 in mapping.keys(), True)
+
+        mapping_without_inputs = g0.get_node_id_to_enumerate_mapping(True, False)
+        self.assertNotEqual(len(mapping_without_inputs.keys()), len(g0.get_nodes()))
+        self.assertEqual(4 in mapping_without_inputs.keys(), False)
+
+        mapping_without_outputs = g0.get_node_id_to_enumerate_mapping(False, True)
+        self.assertNotEqual(len(mapping_without_outputs.keys()), len(g0.get_nodes()))
+        self.assertEqual(4 in mapping_without_outputs.keys(), True)
+        self.assertEqual(2 in mapping_without_outputs.keys(), False)
 
 if __name__ == "__main__":
     unittest.main()

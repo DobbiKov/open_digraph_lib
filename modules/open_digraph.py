@@ -125,8 +125,33 @@ class open_digraph: #for open directed graph
     def get_nodes_by_ids(self, ids):
         return [self.get_id_node_map()[i] for i in ids]
 
-    def get_node_id_to_enumerate_mapping(self):
-        return {node_id: id for id, node_id in enumerate(self.get_id_node_map())}
+    def get_node_id_to_enumerate_mapping(self, without_inputs=False, without_outputs=False):
+        """
+        Creates a mapping node_id to id in [0, n-1] where n is the number of nodes 
+
+        Args:
+            without_inputs: bool - set True if you don't want to count input nodes
+            without_outputs: bool - set True if you don't want to count output nodes
+        Returns:
+            dict[int, int] ({node_id:id}) where node_id is the id of a node and id it's id in the matrix
+        """
+        res = {}
+
+        node_id_mapping = self.get_id_node_map()
+        inputs_ids = self.get_inputs_ids()
+        outputs_ids = self.get_outputs_ids()
+
+        id = 0
+
+        for node_id in node_id_mapping.keys():
+            if without_inputs is True and node_id in inputs_ids:
+                continue
+            if without_outputs is True and node_id in outputs_ids:
+                continue
+            res[node_id] = id
+            id += 1
+
+        return res
 
     #Setters
     def set_inputs(self, inputs): self.inputs = inputs
@@ -455,11 +480,13 @@ class open_digraph: #for open directed graph
         **Creates an adjacancy matrix corresponding to the graph**
         '''
         #TODO
-        map = self.get_node_id_to_enumerate_mapping()
+        map = self.get_node_id_to_enumerate_mapping(True, True)
         n = len(map)
         res = [[0 for _ in range(n)] for _ in range(n)]
         for node_id, mat_id in map.items():
             for c_id, c_mult in self.get_id_node_map()[node_id].get_children().items():
+                if c_id in self.get_inputs_ids() or c_id in self.get_outputs_ids(): # we do not count the edges with inputs and outputs
+                    continue
                 res[mat_id][map[c_id]]+=c_mult
         return res
 
