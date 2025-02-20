@@ -629,10 +629,10 @@ class open_digraph: #for open directed graph
         os.system(f"dot -Tpdf ./{file_name_dot} -o ./{file_name_pdf}")
 
         os.system(f"open ./{file_name_pdf}")
-        # if os.system(f"python3 -m webbrowser -t \"./{file_name_pdf}\"") != 0:
+        #if os.system(f"python3 -m webbrowser -t \"./{file_name_pdf}\"") != 0:
 
-        os.remove(f"./{file_name_dot}")
-        os.remove(f"./{file_name_pdf}")
+        #os.remove(f"./{file_name_dot}")
+        #os.remove(f"./{file_name_pdf}")
 
 def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))):
     return int(start + (bound-start)*number_generator())
