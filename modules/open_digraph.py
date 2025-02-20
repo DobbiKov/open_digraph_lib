@@ -1,5 +1,7 @@
 import copy
 import random
+import os
+
 class node:
     def __init__(self, identity, label, parents, children):
         '''
@@ -619,6 +621,18 @@ class open_digraph: #for open directed graph
                         f.write(f"v{node.get_id()} -> v{int(child)};\n")
             f.write("}\n")
             f.close()
+    def display(self):
+        file_name = "display_graph"
+        file_name_dot = f"{file_name}.dot"
+        file_name_pdf = f"{file_name}.pdf"
+        self.save_as_dot_file(f"./{file_name_dot}")
+        os.system(f"dot -Tpdf ./{file_name_dot} -o ./{file_name_pdf}")
+
+        os.system(f"open ./{file_name_pdf}")
+        # if os.system(f"python3 -m webbrowser -t \"./{file_name_pdf}\"") != 0:
+
+        os.remove(f"./{file_name_dot}")
+        os.remove(f"./{file_name_pdf}")
 
 def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))):
     return int(start + (bound-start)*number_generator())

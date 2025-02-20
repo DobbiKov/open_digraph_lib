@@ -34,8 +34,9 @@ n4 = node(4, '4i', {}, {3:1})
 graph = open_digraph([4], [2], 
                   [n0, n1, n2, n3, n4])
 
+graph.display()
 #
-graph = open_digraph.random(6, 9, 1, 2)
+# graph = open_digraph.random(6, 9, 1, 2)
 # dot = vizualize_graph(graph)
 #
 # dot.render('graph', view=True)
@@ -44,5 +45,7 @@ graph.save_as_dot_file("./dot.dot")
 
 
 graphNew = open_digraph.from_dot_file("./dot.dot")
+print(graphNew.get_inputs_ids())
+print(graphNew.get_outputs_ids())
 
 graphNew.save_as_dot_file("./dotNew.dot")

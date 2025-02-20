@@ -712,5 +712,30 @@ class TestGraphWithMatrix(unittest.TestCase):
         self.assertEqual(4 in mapping_without_outputs.keys(), True)
         self.assertEqual(2 in mapping_without_outputs.keys(), False)
 
+
+
+class GraphWritingTest(unittest.TestCase):
+    def test_read_write_graph(self):
+        n0 = node(0, '0i', {3:1}, {1:1, 2:2})
+        n1 = node(1, '1i', {0:1}, {3:3})
+        n2 = node(2, '2o', {0:2}, {})
+        n3 = node(3, '3a', {1:3, 4:1}, {0:1})
+        n4 = node(4, '4i', {}, {3:1})
+        graph = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+        graph.save_as_dot_file("./test_dot.dot")
+        mat = graph.adjacancy_matrix()
+
+        read_graph = graph.from_dot_file("./test_dot.dot")
+        read_mat = read_graph.adjacancy_matrix()
+
+        graph.is_well_formed()
+
+        self.assertEqual(len(graph.get_nodes_ids()), len(read_graph.get_nodes_ids()))
+        self.assertEqual(len(graph.get_inputs_ids()), len(read_graph.get_inputs_ids()))
+        self.assertEqual(len(graph.get_outputs_ids()), len(read_graph.get_outputs_ids()))
+        self.assertEqual(mat, read_mat)
+        os.remove("./test_dot.dot")
+
 if __name__ == "__main__":
     unittest.main()
