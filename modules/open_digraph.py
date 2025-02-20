@@ -492,7 +492,7 @@ class open_digraph: #for open directed graph
         graph = cls.empty()
         with open(path, 'r') as f:
             lines = f.readlines()
-            f.close()
+            lines = iter(lines)
             nodes = {}
             inputs = []
             outputs = []
@@ -508,14 +508,30 @@ class open_digraph: #for open directed graph
                         nodes[tgt] = node(tgt, str(tgt), {}, {})
                     nodes[src].add_child_id(tgt)
                     nodes[tgt].add_parent_id(src)
-                elif 'label="input"' in line:
-                    parts = line.split(' ')
-                    node_id = int(parts[0].strip().lstrip('v'))
-                    inputs.append(node_id)
-                elif 'label="output"' in line:
-                    parts = line.split(' ')
-                    node_id = int(parts[0].strip().lstrip('v'))
-                    outputs.append(node_id)
+                elif 'subgraph inputs' in line:
+                    while '}' not in line:
+                        line = next(lines).strip()
+                        if 'v' in line:
+                            parts = line.split(' ')
+                            node_id = int(parts[0].strip().lstrip('v'))
+                            label = parts[1].split('=')[1].strip('"')
+                            inputs.append(node_id)
+                            if node_id not in nodes:
+                                nodes[node_id] = node(node_id, label, {}, {})
+                            else:
+                                nodes[node_id].set_label(label)
+                elif 'subgraph outputs' in line:
+                    while '}' not in line:
+                        line = next(lines).strip()
+                        if 'v' in line:
+                            parts = line.split(' ')
+                            node_id = int(parts[0].strip().lstrip('v'))
+                            label = parts[1].split('=')[1].strip('"')
+                            outputs.append(node_id)
+                            if node_id not in nodes:
+                                nodes[node_id] = node(node_id, label, {}, {})
+                            else:
+                                nodes[node_id].set_label(label)
 
                 elif '[label=' in line:
                     node_id, label = line.split('[label=')
