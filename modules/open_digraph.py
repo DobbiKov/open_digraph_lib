@@ -81,7 +81,19 @@ class node:
             node: A new instance of the node with copied attributes.
         """
         return node(self.get_id(), self.get_label(), self.get_parents().copy(), self.get_children().copy())
-     
+    
+    #Degree
+    
+    def indegree(self):
+        return sum(self.get_parents().values)
+    
+    def outdegree(self):
+        return sum(self.get_children().values())
+    
+    def degree(self):
+        return self.indegree() + self.outdegree()
+
+
 class open_digraph: #for open directed graph
     def __init__(self, inputs, outputs, nodes):
         '''
