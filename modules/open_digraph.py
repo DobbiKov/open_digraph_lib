@@ -84,18 +84,27 @@ class node:
     
     #Degree
     
-    def indegree(self):
-        return sum(self.get_parents().values)
+    def indegree(self) -> int:
+        """
+        Returns the number of coming edges
+        """
+        return sum(self.get_parents().values())
     
-    def outdegree(self):
+    def outdegree(self) -> int:
+        """
+        Returns the number of outgoing edges
+        """
         return sum(self.get_children().values())
     
-    def degree(self):
+    def degree(self) -> int:
+        """
+        Returns the degree of a node (number of coming and outgoing edges)
+        """
         return self.indegree() + self.outdegree()
 
 
 class open_digraph: #for open directed graph
-    def __init__(self, inputs, outputs, nodes):
+    def __init__(self, inputs: list[int], outputs: list[int], nodes: list[node]):
         '''
         Initialize a new open directed graph
 
@@ -109,15 +118,30 @@ class open_digraph: #for open directed graph
         self.nodes: dict[int, node] = {node.id:node for node in nodes} # self.nodes: <int,node> dict
         
     #Getters
-    def get_inputs_ids(self):
+    def get_inputs_ids(self) -> list[int]:
+        """
+        Returns list of ids of input nodes
+        """
         return self.inputs
-    def get_outputs_ids(self):
+    def get_outputs_ids(self) -> list[int]:
+        """
+        Returns list of ids of output nodes
+        """
         return self.outputs
-    def get_id_node_map(self):
+    def get_id_node_map(self) -> dict[int, node]:
+        """
+        Returns dictonary of the form {node_id:node} 
+        """
         return self.nodes
-    def get_nodes(self):
+    def get_nodes(self) -> list[node]:
+        """
+        Returns list of nodes
+        """
         return list(self.nodes.values())
-    def get_nodes_ids(self):
+    def get_nodes_ids(self) -> list[int]:
+        """
+        Returns list of ids of all the nodes
+        """
         return list(self.nodes.keys())
     def get_number_of_nodes(self) -> int:
         """
@@ -142,8 +166,18 @@ class open_digraph: #for open directed graph
         if(len(r)>1):
             raise RuntimeError(f"Digraph has 2 elements with the same id {i}")
         return r[0] 
-    def get_nodes_by_ids(self, ids):
-        return [self.get_id_node_map()[i] for i in ids]
+    def get_nodes_by_ids(self, ids: list[int]) -> list[node]:
+        """
+        Gives list of nodes by with ids from given list
+
+        Args:
+            ids(list[int]): list of ids of nodes
+
+        Returns:
+            list[node] - list of nodes with gives ids
+        """
+        id_node_map = self.get_id_node_map()
+        return [id_node_map[i] for i in ids]
 
     def get_node_id_to_enumerate_mapping(self, without_inputs=False, without_outputs=False):
         """
@@ -174,26 +208,44 @@ class open_digraph: #for open directed graph
         return res
 
 
-    def min_id(self):
+    def min_id(self) -> int:
+        """
+        Returns the smallest id among all the nodes
+        """
         return min(self.get_nodes_ids())
     def max_id(self):
+        """
+        Returns the biggest id among all the nodes
+        """
         return max(self.get_nodes_ids())
-    def shift_indices(self, n):
+    def shift_indices(self, n: int) -> None:
+        """
+        Shifts an id of each node by n
+        """
         for node in self.get_nodes():
             node.set_id(node.get_id() + n)
        
 
     #Setters
-    def set_inputs(self, inputs): self.inputs = inputs
-    def set_outputs(self, outputs): self.outputs = outputs
+    def set_inputs(self, inputs: list[int]): self.inputs = inputs
+    def set_outputs(self, outputs: list[int]): self.outputs = outputs
 
     #Adders
-    def add_input_id(self, id): 
+    def add_input_id(self, id: int) -> None: 
+        """
+        Adds given id to the list of inputs
+        """
         self.inputs.append(id)
-    def add_output_id(self, id): 
+    def add_output_id(self, id: int) -> None: 
+        """
+        Adds given id to the list of outputs
+        """
         self.outputs.append(id)
 
-    def new_id(self):
+    def new_id(self) -> int:
+        """
+        Returns availible id in the graph for a new node
+        """
         # Proposing simpler code 
         # Les optimal in sens of utilizing all possible ids, but faster
         # return max(self.get_nodes_ids())+1
@@ -208,7 +260,7 @@ class open_digraph: #for open directed graph
                 return i
         return ids[-1] + 1
 
-    def add_edge(self, src, tgt):
+    def add_edge(self, src: int, tgt: int) -> bool:
         """
         Add a directed edge from source node to target node.
 
@@ -220,15 +272,16 @@ class open_digraph: #for open directed graph
             bool: True if the edge was added successfully, False otherwise.
         """
         if src not in self.get_nodes_ids() or tgt not in self.get_nodes_ids():
-            return None
+            return False
         self.nodes[src].add_child_id(tgt)
         self.nodes[tgt].add_parent_id(src)
+        return True
 
     def add_edges(self, edges):
         for src, tgt in edges:
             self.add_edge(src, tgt)
     
-    def add_node(self, label='', parents: dict[int, int] | None=None, children: dict[int, int] | None=None):
+    def add_node(self, label='', parents: dict[int, int] | None=None, children: dict[int, int] | None=None) -> int:
         """
         Add a new node to the graph with optional connections.
 
@@ -263,7 +316,7 @@ class open_digraph: #for open directed graph
                     self.add_edge(n_id, i)
         return n_id
 
-    def add_input_node(self, point_to_id: int):
+    def add_input_node(self, point_to_id: int) -> int:
         """
         Adds a new input node to the graph. Carefully adds the id to input_ids list and creates an edge
 
@@ -271,7 +324,7 @@ class open_digraph: #for open directed graph
             point_to_id(int): id of the node, new input node will point to
 
         Returns:
-            id of the new input node
+            id of the new input node (return -1 if the node couldn't be added)
         """
         if point_to_id not in self.get_nodes_ids():
             return -1
@@ -282,7 +335,7 @@ class open_digraph: #for open directed graph
         self.add_input_id(new_id)
         return new_id
 
-    def add_output_node(self, point_from_id: int):
+    def add_output_node(self, point_from_id: int) -> int:
         """
         Adds a new output node to the graph. Carefully adds the id to output_ids list and creates an edge
 
@@ -290,7 +343,7 @@ class open_digraph: #for open directed graph
             point_from_id(int): id of the node that new input node will be pointed from
 
         Returns:
-            id of the new output node
+            id of the new output node (return -1 if the node couldn't be added)
         """
         if point_from_id not in self.get_nodes_ids():
             return -1
@@ -302,7 +355,7 @@ class open_digraph: #for open directed graph
         return new_id
 
     #removers
-    def remove_edge(self, src, tgt):
+    def remove_edge(self, src: int, tgt: int) -> None:
         """
         Remove one edge pointing from [src] to [tgt]
 
@@ -315,7 +368,7 @@ class open_digraph: #for open directed graph
         self.nodes[src].remove_child_once(tgt)
         self.nodes[tgt].remove_parent_once(src)
 
-    def remove_parallel_edges(self, src, tgt):
+    def remove_parallel_edges(self, src: int, tgt: int) -> None:
         """
         Remove all the edges pointing from [src] to [tgt]
 
@@ -356,7 +409,7 @@ class open_digraph: #for open directed graph
         if id in self.outputs:
             self.outputs.remove(id)
 
-    def remove_edges(self, lst: list[tuple[int, int]]):
+    def remove_edges(self, lst: list[tuple[int, int]]) -> None:
         """
         Removes edges provided in the list
 
@@ -368,7 +421,7 @@ class open_digraph: #for open directed graph
         for (src, tgt) in lst:
             self.remove_edge(src, tgt)
 
-    def remove_several_parallel_edges(self, lst: list[tuple[int, int]]):
+    def remove_several_parallel_edges(self, lst: list[tuple[int, int]]) -> None:
         """
         Removes all the edges provided in the list
 
@@ -380,7 +433,7 @@ class open_digraph: #for open directed graph
         for (src, tgt) in lst:
             self.remove_parallel_edges(src, tgt)
 
-    def remove_nodes_by_id(self, ids: list[int]):
+    def remove_nodes_by_id(self, ids: list[int]) -> None:
         """
         Removes all the nodes provided in the list and carefully removes all the edges pointed to and from the nodes.
 
@@ -460,7 +513,10 @@ class open_digraph: #for open directed graph
                 return node
         return None 
 
-    def is_well_formed(self):
+    def is_well_formed(self) -> bool:
+        """
+        Returns True if the graph is well formed and False otherwise
+        """
         try:
             self.assert_is_well_formed()
             return True
@@ -519,7 +575,7 @@ class open_digraph: #for open directed graph
                 )
 
 
-    def adjacancy_matrix(self):
+    def adjacancy_matrix(self) -> list[list[int]]:
         '''
         **Creates an adjacancy matrix corresponding to the graph**
         '''
@@ -535,7 +591,18 @@ class open_digraph: #for open directed graph
         return res
 
     @classmethod
-    def random(cls, n, bound, inputs=0, outputs=0, form="free", loop_free=True):
+    def random(cls, n: int, bound: int, inputs: int=0, outputs: int=0, form: str="free", loop_free: bool=True):
+        """
+        Construct a random graph given constraints and type
+
+        Args:
+            n(int) - number of nodes
+            bound(int) - limit of max possible edges pointing from one node to another
+            inputs(int) - number of input nodes
+            outputs(int) - number of output nodes
+            form(str) - the form of the graph (free, DAG, oriented, undirected)
+            loop_free(bool) - True if there must be no loops (from a node to the same node) and False otherwise
+        """
         mat = []
 
         match form:
@@ -560,6 +627,14 @@ class open_digraph: #for open directed graph
     
     @classmethod
     def from_dot_file(cls, path : str, verbose = False):
+        """
+        Reads a dot file given path and returns graph read from the file
+
+        Args:
+            path(str) - path where to read file from
+        Returns:
+            open_digraph
+        """
         graph = cls.empty()
         with open(path, 'r') as f:
             lines = f.readlines()
@@ -623,7 +698,14 @@ class open_digraph: #for open directed graph
             
 
 
-    def save_as_dot_file(self, path: str, verbose: bool = False):
+    def save_as_dot_file(self, path: str, verbose: bool = False) -> None:
+        """
+        Save the given graph to the file using given path (if given verbose is True, adds ids of each node to the labels)
+
+        Args:
+            path(str) - path to the file
+            verbose(bool) - True if add ids to the labels and False otherwise
+        """
         def write_node(f, node):
             w_id = ""
             if verbose:
@@ -664,6 +746,9 @@ class open_digraph: #for open directed graph
             f.write("}\n")
             f.close()
     def display(self):
+        """
+        Displays the graph in a pdf file
+        """
         file_name = "display_graph"
         file_name_dot = f"{file_name}.dot"
         file_name_pdf = f"{file_name}.pdf"

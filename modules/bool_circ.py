@@ -2,8 +2,8 @@ import copy
 from modules.open_digraph import node, open_digraph
 
 class bool_circ(open_digraph):
-    def __init__(self, inputs, outputs, nodes):
-        super().__init__(inputs, outputs, nodes)
+    def __init__(self, g: open_digraph):
+        super().__init__(g.inputs, g.outputs, g.nodes)
 
     def is_acyclic_inner(self):
         """
