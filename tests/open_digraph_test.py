@@ -494,12 +494,13 @@ class TestOpenDigraphWellFromedNess(unittest.TestCase):
         
         # Attempt to add an edge where source node does not exist
         result = graph.add_edge(999, 2)
-        self.assertIsNone(result, "Adding edge with nonexistent source should return None.")
+        self.assertFalse(result, "Adding edge with nonexistent source should return False.")
+
         graph.assert_is_well_formed()
         
         # Attempt to add an edge where target node does not exist
         result = graph.add_edge(2, 999)
-        self.assertIsNone(result, "Adding edge with nonexistent target should return None.")
+        self.assertFalse(result, "Adding edge with nonexistent target should return False.")
         graph.assert_is_well_formed()
 
     def test_add_duplicate_input_output(self):
@@ -747,11 +748,10 @@ class BoolCircTests(unittest.TestCase):
         n2 = node(2, '2o', {0:2}, {})
         n3 = node(3, '3a', {1:3, 4:1}, {0:1})
         n4 = node(4, '4i', {}, {3:1})
-        graph = bool_circ(
-            open_digraph(
+        graph = open_digraph(
                 [4], [2], [n0, n1, n2, n3, n4]
             )
-        )
+        
         self.assertEqual(graph.is_acyclic(), False)
         self.assertEqual(graph.is_cyclic(), True)
 
@@ -767,10 +767,10 @@ class BoolCircTests(unittest.TestCase):
         n8 = node(8, '~', {7:7}, {9:9})
         n9 = node(9, '&', {6:1, 8:1}, {})
 
-        circuit = bool_circ(open_digraph(
+        circuit = open_digraph(
                 [0,1,2], [9], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
-            )
-        )
+
+                )
 
         self.assertEqual(circuit.is_acyclic(), True)
         self.assertEqual(circuit.is_cyclic(), False)
