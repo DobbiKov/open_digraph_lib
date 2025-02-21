@@ -34,18 +34,17 @@ class bool_circ(open_digraph):
             label = node.get_label()
             in_d = node.indegree()
             out_d = node.outdegree()
-            node_d = node.degree()
 
             if label == '':
                 if in_d != 1:
                     return False
-            elif label in {'&', '|','^'}:
+            elif label in ['&', '|','^']:
                 if out_d != 1:
                     return False
             elif label == '~':
                 if out_d != 1 or in_d != 1:
                     return False
-            elif label in  {'1', '0'}:
+            elif label in  ['1', '0']:
                 if out_d != 0:
                     return False
             else: 
