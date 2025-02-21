@@ -774,6 +774,24 @@ class BoolCircTests(unittest.TestCase):
 
         self.assertEqual(circuit.is_acyclic(), True)
         self.assertEqual(circuit.is_cyclic(), False)
+    
+    def test_is_well_formed(self):
+        n0 = node(0, 'input', {}, {1: 1})
+        n1 = node(1, '', {0: 1}, {2: 1})
+        n2 = node(2, '&', {1: 1}, {3: 1})
+        n3 = node(3, '~', {2: 1}, {4: 1})
+        n4 = node(4, 'output', {3: 1}, {})
+        valid_circ = bool_circ(open_digraph([0], [4], [n0, n1, n2, n3, n4]))
+        self.assertTrue(valid_circ.is_well_formed(), "The valid circuit should be well formed.")
+
+        n0 = node(0, 'input', {}, {1: 1})
+        n1 = node(1, '', {0: 1}, {2: 1})
+        n2 = node(2, '&', {1: 1}, {3: 1})
+        n3 = node(3, '~', {2: 1}, {})  
+        n4 = node(4, 'output', {}, {}) 
+        invalid_circ = bool_circ(open_digraph([0], [4], [n0, n1, n2, n3, n4]))
+        self.assertFalse(invalid_circ.is_well_formed(), "The invalid circuit should not be well formed.")
+
 
 if __name__ == "__main__":
     unittest.main()
