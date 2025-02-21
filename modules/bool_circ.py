@@ -4,6 +4,8 @@ from modules.open_digraph import node, open_digraph
 class bool_circ(open_digraph):
     def __init__(self, g: open_digraph):
         super().__init__(g.inputs, g.outputs, list(g.nodes.values()))
+        if not self.is_well_formed():
+            self = self.empty()
 
     
     def is_well_formed(self):
@@ -20,6 +22,8 @@ class bool_circ(open_digraph):
             True - if the graph is well formed
             False - otherwise
         """
+        if not super().is_well_formed():
+            return False
 
         if not self.is_acyclic():
             return False

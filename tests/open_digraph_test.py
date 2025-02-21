@@ -793,5 +793,17 @@ class BoolCircTests(unittest.TestCase):
         self.assertFalse(invalid_circ.is_well_formed(), "The invalid circuit should not be well formed.")
 
 
+    def test_bad_graph_empty(self):
+        n0 = node(0, '0i', {3:1}, {1:1, 2:2})
+        n1 = node(1, '1i', {0:1}, {3:3})
+        n2 = node(2, '2o', {0:2}, {})
+        n3 = node(3, '3a', {1:3, 4:1}, {0:1})
+        n4 = node(4, '4i', {}, {3:1})
+        graph = open_digraph(
+                [4], [2], [n0, n1, n2, n3, n4]
+            )
+        circ = bool_circ(graph)
+        self.assertEqual(circ.is_empty(), True)
+
 if __name__ == "__main__":
     unittest.main()

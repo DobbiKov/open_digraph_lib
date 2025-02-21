@@ -513,6 +513,12 @@ class open_digraph: #for open directed graph
                 return node
         return None 
 
+    def is_empty(self) -> bool:
+        """
+        Returns True if the graph is empty and False otherwise
+        """
+        return len(self.nodes) == 0
+
     def is_well_formed(self) -> bool:
         """
         Returns True if the graph is well formed and False otherwise
