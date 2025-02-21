@@ -715,6 +715,48 @@ class TestGraphWithMatrix(unittest.TestCase):
         self.assertEqual(4 in mapping_without_outputs.keys(), True)
         self.assertEqual(2 in mapping_without_outputs.keys(), False)
 
+    def test_shidft_indices(self):
+        n0 = node(0, '0i', {3:1}, {1:1, 2:2})
+        n1 = node(1, '1i', {0:1}, {3:3})
+        n2 = node(2, '2o', {0:2}, {})
+        n3 = node(3, '3a', {1:3, 4:1}, {0:1})
+        n4 = node(4, '4i', {}, {3:1})
+        graph = open_digraph([4], [2], 
+                          [n0, n1, n2, n3, n4])
+
+        graph.shift_indices(5)
+
+        # change of inputs, outputs, node ids
+        self.assertEqual(graph.get_inputs_ids(), [9])
+        self.assertEqual(graph.get_outputs_ids(), [7])
+        self.assertEqual(graph.get_nodes_ids(), [5, 6, 7, 8, 9])
+         
+        #verifying that node ids are changed and their parents' and children's as well
+        self.assertEqual(graph.get_id_node_map()[5].get_label(), '0i')
+        self.assertEqual(graph.get_id_node_map()[5].get_id(), 5)
+        self.assertEqual(graph.get_id_node_map()[5].get_parents(), {8:1})
+        self.assertEqual(graph.get_id_node_map()[5].get_children(), {6:1, 7:2})
+
+        self.assertEqual(graph.get_id_node_map()[6].get_label(), '1i')
+        self.assertEqual(graph.get_id_node_map()[6].get_id(), 6)
+        self.assertEqual(graph.get_id_node_map()[6].get_parents(), {5:1})
+        self.assertEqual(graph.get_id_node_map()[6].get_children(), {8:3})
+
+        self.assertEqual(graph.get_id_node_map()[7].get_label(), '2o')
+        self.assertEqual(graph.get_id_node_map()[7].get_id(), 7)
+        self.assertEqual(graph.get_id_node_map()[7].get_parents(), {5:2})
+        self.assertEqual(graph.get_id_node_map()[7].get_children(), {})
+
+        self.assertEqual(graph.get_id_node_map()[8].get_label(), '3a')
+        self.assertEqual(graph.get_id_node_map()[8].get_id(), 8)
+        self.assertEqual(graph.get_id_node_map()[8].get_parents(), {6:3, 9:1})
+        self.assertEqual(graph.get_id_node_map()[8].get_children(), {5:1})
+
+        self.assertEqual(graph.get_id_node_map()[9].get_label(), '4i')
+        self.assertEqual(graph.get_id_node_map()[9].get_id(), 9)
+        self.assertEqual(graph.get_id_node_map()[9].get_parents(), {})
+        self.assertEqual(graph.get_id_node_map()[9].get_children(), {8:1})
+
 
 
 class GraphWritingTest(unittest.TestCase):

@@ -223,7 +223,15 @@ class open_digraph: #for open directed graph
         Shifts an id of each node by n
         """
         for node in self.get_nodes():
-            node.set_id(node.get_id() + n)
+            node.set_id(node.get_id() + n) # change node's id
+            node.set_parents({n_id + n:n_mult for n_id, n_mult in node.get_parents().items()}) # change it's parents ids (saved in dict of this node)
+            node.set_children({n_id + n:n_mult for n_id, n_mult in node.get_children().items()}) # change it's children ids (saved in dict of this node)
+
+        # change nodes dict keys to new node's ids in the graph
+        self.nodes = {node.id:node for node in self.get_nodes()}
+        #change inputs and outputs ids in the list in the graph
+        self.inputs = [id + n for id in self.get_inputs_ids()]
+        self.outputs = [id + n for id in self.get_outputs_ids()]
        
 
     #Setters
