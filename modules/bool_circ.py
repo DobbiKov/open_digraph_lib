@@ -1,5 +1,5 @@
 import copy
-from open_digraph import node, open_digraph
+from modules.open_digraph import node, open_digraph
 
 class bool_circ(open_digraph):
     def __init__(self, inputs, outputs, nodes):
