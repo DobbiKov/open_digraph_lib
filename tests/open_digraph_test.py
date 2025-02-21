@@ -784,13 +784,34 @@ class BoolCircTests(unittest.TestCase):
         valid_circ = bool_circ(open_digraph([0], [4], [n0, n1, n2, n3, n4]))
         self.assertTrue(valid_circ.is_well_formed(), "The valid circuit should be well formed.")
 
+    def test_invalid_node_name_circuit(self):
+
+        # invalid name
         n0 = node(0, '0', {}, {1: 1})
-        n1 = node(1, '', {0: 1}, {2: 1})
+        n1 = node(1, 'lab', {0: 1}, {2: 1})
         n2 = node(2, '&', {1: 1}, {3: 1})
         n3 = node(3, '~', {2: 1}, {})  
         n4 = node(4, '1', {}, {}) 
         invalid_circ = bool_circ(open_digraph([0], [4], [n0, n1, n2, n3, n4]))
-        self.assertFalse(invalid_circ.is_well_formed(), "The invalid circuit should not be well formed.")
+        self.assertTrue(invalid_circ.is_empty(), "The invalid circuit should not be well formed thus empty.")
+
+        invalid_circ = bool_circ(open_digraph([0], [4], [n0, n1, n2, n3, n4]), debug=True)
+        self.assertNotEqual(len(invalid_circ.get_nodes()), 0)
+        self.assertFalse(invalid_circ.is_well_formed(), "The invalid circuit should not be well formed thus empty.")
+        
+
+    def test_invalid_outputs_number(self):
+        n0 = node(0, '0', {}, {1: 1})
+        n1 = node(1, '^', {0: 1}, {2: 2})
+        n2 = node(2, '&', {1: 2}, {3: 1})
+        n3 = node(3, '~', {2: 1}, {})  
+        n4 = node(4, '1', {}, {}) 
+        invalid_circ = bool_circ(open_digraph([0], [4], [n0, n1, n2, n3, n4]))
+        self.assertTrue(invalid_circ.is_empty(), "The invalid circuit should not be well formed thus empty.")
+
+        invalid_circ = bool_circ(open_digraph([0], [4], [n0, n1, n2, n3, n4]), debug=True)
+        self.assertNotEqual(len(invalid_circ.get_nodes()), 0)
+        self.assertFalse(invalid_circ.is_well_formed(), "The invalid circuit should not be well formed thus empty.")
 
 
     def test_bad_graph_empty(self):

@@ -2,7 +2,18 @@ import copy
 from modules.open_digraph import node, open_digraph
 
 class bool_circ(open_digraph):
-    def __init__(self, g: open_digraph):
+    def __init__(self, g: open_digraph, debug: bool=False):
+        """
+        Constructor of boolean circuit
+
+        Args:
+            g(open_digraph)
+            debug(bool) - set to True if you want to create the circuit anyway even if it is not well formed
+        """
+        if debug is True:
+            super().__init__(g.inputs, g.outputs, list(g.nodes.values()))
+            return None
+
         if not g.is_well_formed():
             g = open_digraph.empty()
             
