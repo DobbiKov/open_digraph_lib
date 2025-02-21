@@ -173,6 +173,16 @@ class open_digraph: #for open directed graph
 
         return res
 
+
+    def min_id(self):
+        return min(self.get_nodes_ids())
+    def max_id(self):
+        return max(self.get_nodes_ids())
+    def shift_indices(self, n):
+        for node in self.get_nodes():
+            node.set_id(node.get_id() + n)
+       
+
     #Setters
     def set_inputs(self, inputs): self.inputs = inputs
     def set_outputs(self, outputs): self.outputs = outputs
