@@ -107,6 +107,12 @@ class open_digraph: #for open directed graph
         return list(self.nodes.values())
     def get_nodes_ids(self):
         return list(self.nodes.keys())
+    def get_number_of_nodes(self) -> int:
+        """
+        Returns number of nodes in the graph
+        """
+        return len(self.nodes)
+
     def __getitem__(self, i) -> node | None:
         """
         Allow accessing a node by its ID using indexing.
@@ -419,12 +425,26 @@ class open_digraph: #for open directed graph
         """
         return open_digraph(self.get_inputs_ids().copy(), self.get_outputs_ids().copy(), copy.deepcopy(self.get_nodes()))
     
+    def find_node_without_children(self) -> node | None:
+        """
+        Finds a node without children in the graph
+
+        Returns:
+            node - if it finds a node without children
+            None - if it doesn't find such node
+        """
+        for node in self.get_nodes():
+            if len(node.get_children()) == 0:
+                return node
+        return None 
+
     def is_well_formed(self):
         try:
             self.assert_is_well_formed()
             return True
         except:
             return False
+
 
 
     def assert_is_well_formed(self):

@@ -34,9 +34,8 @@ n4 = node(4, '4i', {}, {3:1})
 graph = open_digraph([4], [2], 
                   [n0, n1, n2, n3, n4])
 
+graph = open_digraph.random(6, 9, 1, 2)
 graph.display()
-#
-# graph = open_digraph.random(6, 9, 1, 2)
 # dot = vizualize_graph(graph)
 #
 # dot.render('graph', view=True)
