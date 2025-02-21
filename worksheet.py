@@ -49,3 +49,11 @@ print(graphNew.get_inputs_ids())
 print(graphNew.get_outputs_ids())
 
 graphNew.save_as_dot_file("./dotNew.dot")
+
+n0 = node(0, '0', {}, {1: 1})
+n1 = node(1, '', {0: 1}, {2: 1})
+n2 = node(2, '&', {1: 1}, {3: 1})
+n3 = node(3, '~', {2: 1}, {4: 1})
+n4 = node(4, '1', {3: 1}, {})
+valid_circ = open_digraph([0], [4], [n0, n1, n2, n3, n4])
+print(valid_circ.is_well_formed())

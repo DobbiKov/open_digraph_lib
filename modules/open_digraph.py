@@ -654,6 +654,7 @@ class open_digraph: #for open directed graph
             True - if the graph is acyclic
             False - in the other case
         """
+
         g = copy.deepcopy(self)
         return g.is_acyclic_inner()
 
