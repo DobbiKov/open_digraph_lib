@@ -795,6 +795,9 @@ class open_digraph: #for open directed graph
     def display(self, file_name='display_graph', dir="display"):
         """
         Displays the graph in a pdf file
+        Args:
+            file_name(str) - file name that the file will have (default: display_graph)
+            dir(str) - folder where the files to save to (default: display)
         """
         os.system(f"mkdir -p {dir}")
         file_name_dot = f"{file_name}.dot"
