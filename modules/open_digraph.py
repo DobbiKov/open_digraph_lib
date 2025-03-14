@@ -810,6 +810,17 @@ class open_digraph: #for open directed graph
 
         #os.remove(f"./{file_name_dot}")
         #os.remove(f"./{file_name_pdf}")
+    @classmethod
+    def from_matrix(cls, mat: list[list[int]]):
+        """
+        Construct open_digraph from the given adjacancy matrix
+
+        Args:
+            mat( list(list(int)) ) - a 2D matrix to construct graph from
+        Returns:
+            open_digraph
+        """
+        return graph_from_adjacency_matrix(mat)
 
 def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))):
     return int(start + (bound-start)*number_generator())

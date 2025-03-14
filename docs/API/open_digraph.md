@@ -59,7 +59,7 @@ This module is the core of the library. It defines:
   - `adjacancy_matrix()` – Returns the graph’s adjacency matrix.
   - `from_dot_file(path)` – Reads a DOT file and creates a graph.
   - `save_as_dot_file(path, verbose=False)` – Saves graph as DOT file.
-  - `display()` – Renders and displays the graph using Graphviz.
+  - `display()` – Renders and displays the graph using Graphviz. Takes optional `file_name` and `dir` arguments where `file_name` is the name of the output files and `dir` is a name of the folder where the files will be saved. 
 
 - **Random Graph Generation:**  
   - `random(n, bound, inputs, outputs, form, loop_free)` – Generates a random graph.
