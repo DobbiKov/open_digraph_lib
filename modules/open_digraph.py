@@ -757,7 +757,7 @@ class open_digraph: #for open directed graph
             w_id = ""
             if verbose:
                 w_id = node.get_id()
-            f.write(f"v{node.get_id()} [label=\"{node.get_label()}: {w_id}\" ")
+            f.write(f"v{node.get_id()} [label=\"{node.get_label()}{w_id}\" ")
             if node.get_id() in self.get_inputs_ids():
                 f.write(f"shape=diamond")
             elif node.get_id() in self.get_outputs_ids():
@@ -825,7 +825,13 @@ class open_digraph: #for open directed graph
         return graph_from_adjacency_matrix(mat)
 
 
-    def iparallel(self, g):
+    def iparallel(self, g: open_digraph) -> None:
+        """
+        Adds to the graph a given graph g
+        
+        Args:
+            g: open_digraph - graph to add 
+        """
         newg = g.copy()
         newg.shift_indices(self.max_id() + 1)
         # Adds g parallel to self
