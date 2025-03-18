@@ -217,7 +217,10 @@ class open_digraph: #for open directed graph
         """
         Returns the biggest id among all the nodes
         """
+        if(self.is_empty()):
+            return -1
         return max(self.get_nodes_ids())
+    
     def shift_indices(self, n: int) -> None:
         """
         Shifts an id of each node by n
@@ -537,8 +540,6 @@ class open_digraph: #for open directed graph
         except:
             return False
 
-
-
     def assert_is_well_formed(self):
         """
         check if the open directed graph is well-formed.
@@ -587,7 +588,6 @@ class open_digraph: #for open directed graph
                     f"Inconsistent multiplicity between {node.get_id()} -> {parent_id}:"
                     f"{multiplicity} (parent should have same muliplicity to child)"
                 )
-
 
     def adjacancy_matrix(self) -> list[list[int]]:
         '''
@@ -757,7 +757,7 @@ class open_digraph: #for open directed graph
             w_id = ""
             if verbose:
                 w_id = node.get_id()
-            f.write(f"v{node.get_id()} [label=\"{node.get_label()}{w_id}\" ")
+            f.write(f"v{node.get_id()} [label=\"{node.get_label()}: {w_id}\" ")
             if node.get_id() in self.get_inputs_ids():
                 f.write(f"shape=diamond")
             elif node.get_id() in self.get_outputs_ids():
@@ -806,6 +806,8 @@ class open_digraph: #for open directed graph
         os.system(f"dot -Tpdf ./{dir}/{file_name_dot} -o ./{dir}/{file_name_pdf}")
 
         os.system(f"open ./{dir}/{file_name_pdf}")
+        # os.system(f"okular ./{dir}/{file_name_pdf}")
+
         #if os.system(f"python3 -m webbrowser -t \"./{file_name_pdf}\"") != 0:
 
         #os.remove(f"./{file_name_dot}")
@@ -821,6 +823,104 @@ class open_digraph: #for open directed graph
             open_digraph
         """
         return graph_from_adjacency_matrix(mat)
+
+
+    def iparallel(self, g):
+        newg = g.copy()
+        newg.shift_indices(self.max_id() + 1)
+        # Adds g parallel to self
+        for node in newg.get_nodes():
+            self.nodes[node.get_id()] = node
+
+        
+        for input in newg.get_inputs_ids():
+            self.add_input_id(input)
+        for output in newg.get_outputs_ids():
+            self.add_output_id(output)
+
+    def parallel(self, g):
+        newf = self.copy()
+        newf.iparallel(g)
+        return newf
+    
+    def icompose(self, g):
+        assert(len(self.get_outputs_ids()) == len(g.get_inputs_ids()))
+        newg = g.copy()
+        newg.shift_indices(self.max_id() + 1)
+        # Adds g sequential to self
+        for node in newg.get_nodes():
+            self.nodes[node.get_id()] = node
+        for output, input in zip(self.get_outputs_ids(), newg.get_inputs_ids()):
+            self.add_edge(output, input)
+        self.set_outputs(newg.get_outputs_ids())
+    
+    def compose(self, g):
+        newf = self.copy()
+        newf.icompose(g)
+        return newf
+    
+    @classmethod
+    def identity(cls, n):
+        g = cls.empty()
+        for _ in range(n):
+            id = g.add_node()
+            g.add_input_id(id)
+            g.add_output_node(id)
+
+        return g
+    def connected_components(self):
+        """
+        Returns a list of connected components of the graph
+        """
+        def dfs(node_id, visited, component):
+            visited.add(node_id)
+            component.append(node_id)
+            for child in self[node_id].get_children():
+                if child not in visited:
+                    dfs(child, visited, component)
+            for parent in self[node_id].get_parents():
+                if parent not in visited:
+                    dfs(parent, visited, component)
+
+        visited = set()
+        components = []
+        for node_id in self.get_inputs_ids() + self.get_nodes_ids() + self.get_outputs_ids():
+            if node_id not in visited:
+                component = []
+                dfs(node_id, visited, component)
+                components.append(component)
+
+        return len(components), {i: component for i, component in enumerate(components)}
+
+    def split(self):
+        """
+        Splits the graph into connected components
+        """
+        n, components = self.connected_components()
+        res = []
+        for i in range(n):
+            comp = components[i]
+            tmp = open_digraph.empty()
+
+            old_to_new = {}
+            new_to_old = {}
+            for node_id in comp:
+                tmpid = tmp.add_node(self[node_id].get_label())
+                old_to_new[node_id] = tmpid
+                new_to_old[tmpid] = node_id
+                if(node_id in self.get_inputs_ids()):
+                    tmp.add_input_id(tmpid)
+                if(node_id in self.get_outputs_ids()):
+                    tmp.add_output_id(tmpid)
+            
+            for node_id in comp:
+                out = self[node_id].get_children()
+                for key, value in out.items():
+                    tmp.add_edges([[old_to_new[node_id], old_to_new[key]] for _ in range(value)])
+            res.append(tmp)
+                
+        
+        return res
 
 def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))):
     return int(start + (bound-start)*number_generator())
