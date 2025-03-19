@@ -825,7 +825,7 @@ class open_digraph: #for open directed graph
         return graph_from_adjacency_matrix(mat)
 
 
-    def iparallel(self, g: open_digraph) -> None:
+    def iparallel(self, g) -> None:
         """
         Adds to the graph a given graph g
         
@@ -845,22 +845,43 @@ class open_digraph: #for open directed graph
             self.add_output_id(output)
 
     def parallel(self, g):
+        """
+        Returns a sum of the two graphs
+        Args:
+            g(open_digraph) - a graph to add with
+        Returns:
+            open_digraph
+        """
         newf = self.copy()
         newf.iparallel(g)
         return newf
     
     def icompose(self, g):
-        assert(len(self.get_outputs_ids()) == len(g.get_inputs_ids()))
+        """
+        Composes the graph with a given graph g
+
+        Args:
+            g(open_digraph) - a graph to compose with
+        """
+        assert(len(self.get_inputs_ids()) == len(g.get_outputs_ids()))
         newg = g.copy()
         newg.shift_indices(self.max_id() + 1)
         # Adds g sequential to self
         for node in newg.get_nodes():
             self.nodes[node.get_id()] = node
-        for output, input in zip(self.get_outputs_ids(), newg.get_inputs_ids()):
+        for input, output in zip(self.get_inputs_ids(), newg.get_outputs_ids()):
             self.add_edge(output, input)
-        self.set_outputs(newg.get_outputs_ids())
+        self.set_inputs(newg.get_inputs_ids())
     
     def compose(self, g):
+        """
+        Returns a composition of the graph with a given graph g
+
+        Args:
+            g(open_digraph) - a graph to compose with
+        Returns: 
+            open_digraph
+        """
         newf = self.copy()
         newf.icompose(g)
         return newf
@@ -874,11 +895,15 @@ class open_digraph: #for open directed graph
             g.add_output_node(id)
 
         return g
-    def connected_components(self):
+    def connected_components(self) -> tuple[int, dict[int, list[node]]]:
         """
         Returns a list of connected components of the graph
+
+        Returns:
+            (int, dict[int, list[node]])
         """
         def dfs(node_id, visited, component):
+            # depth first search
             visited.add(node_id)
             component.append(node_id)
             for child in self[node_id].get_children():
@@ -890,7 +915,7 @@ class open_digraph: #for open directed graph
 
         visited = set()
         components = []
-        for node_id in self.get_inputs_ids() + self.get_nodes_ids() + self.get_outputs_ids():
+        for node_id in self.get_nodes_ids():
             if node_id not in visited:
                 component = []
                 dfs(node_id, visited, component)
