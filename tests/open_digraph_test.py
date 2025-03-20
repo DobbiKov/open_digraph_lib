@@ -867,6 +867,188 @@ class BoolCircTests(unittest.TestCase):
             )
         circ = bool_circ(graph)
         self.assertEqual(circ.is_empty(), True)
+        
+class TestGraphOperations(unittest.TestCase):
+
+    def setUp(self):
+        # A simple graph for baseline tests
+        # Graph g1: 0 -> 1, input=[0], output=[1]
+        self.g1 = open_digraph(
+            inputs=[0],
+            outputs=[1],
+            nodes=[
+                node(0, 'a', {}, {1:1}),
+                node(1, 'b', {0:1}, {})
+            ]
+        )
+        # Graph g2: 0 -> 1, input=[0], output=[1]
+        self.g2 = open_digraph(
+            inputs=[0],
+            outputs=[1],
+            nodes=[
+                node(0, 'c', {}, {1:1}),
+                node(1, 'd', {0:1}, {})
+            ]
+        )
+
+    def test_iparallel(self):
+        # Test the in-place parallel addition (iparallel)
+        original_node_count = len(self.g1.get_nodes_ids())
+        # g2 will be copied and its indices shifted by (max id of g1)+1.
+        # In g1, max id = 1 so shift by 2: g2's nodes become 2 and 3.
+        self.g1.iparallel(self.g2)
+        # Verify total nodes: 2 (g1) + 2 (g2) = 4
+        self.assertEqual(len(self.g1.get_nodes_ids()), 4)
+        # Check that new node ids 2 and 3 exist
+        self.assertIn(2, self.g1.get_nodes_ids())
+        self.assertIn(3, self.g1.get_nodes_ids())
+        # Check inputs: original g1 had [0]; g2’s input (0 shifted to 2) should be added.
+        self.assertEqual(set(self.g1.get_inputs_ids()), set([0,2]))
+        # Check outputs: original g1 had [1]; g2’s output (1 shifted to 3) should be added.
+        self.assertEqual(set(self.g1.get_outputs_ids()), set([1,3]))
+
+    def test_parallel(self):
+        # Test parallel returns a new graph, leaving originals unchanged.
+        # g1.parallel(g2) should return a graph with all the nodes combined.
+        g_parallel = self.g1.parallel(self.g2)
+        # g1 still should have its original 2 nodes.
+        self.assertEqual(len(self.g1.get_nodes_ids()), 2)
+        # New graph should have 4 nodes.
+        self.assertEqual(len(g_parallel.get_nodes_ids()), 4)
+        # Check that the parallel graph has inputs and outputs from both:
+        self.assertEqual(set(g_parallel.get_inputs_ids()), set([0,2]))
+        self.assertEqual(set(g_parallel.get_outputs_ids()), set([1,3]))
+
+    def test_icompose(self):
+        # icompose merges self with graph g (passed as parameter)
+        # For composition, ensure self.get_inputs_ids() has same length as g.get_outputs_ids()
+        # We create g1 and a new graph g3 such that g3.outputs has one element.
+        n0 = node(0, 'x', {}, {1:1})
+        n1 = node(1, 'y', {0:1}, {})
+        g_comp1 = open_digraph(
+            inputs=[0],
+            outputs=[1],
+            nodes=[n0, n1]
+        )
+        # g3: single edge graph: 0 -> 1, with input=[0] and output=[1]
+        n2 = node(0, 'p', {}, {1:1})
+        n3 = node(1, 'q', {0:1}, {})
+        g_comp2 = open_digraph(
+            inputs=[0],
+            outputs=[1],
+            nodes=[n2, n3]
+        )
+        # For icompose, require len(g_comp1.inputs)==len(g_comp2.outputs) [both 1]
+        # In icompose, g_comp2 will be shifted by (g_comp1.max_id()+1).
+        # Here, g_comp1.max_id() is 1 so shift = 2 and then:
+        #   g_comp2: nodes become 2 and 3, with input=[2] and output=[3].
+        # Also, an edge is added from output (3) to the original input (0)
+        g_comp1.icompose(g_comp2)
+        # Check combined node count: original 2 + composed 2 = 4
+        self.assertEqual(len(g_comp1.get_nodes_ids()), 4)
+        # Check that node 3 (shifted output) now is a parent of node 0.
+        self.assertIn(3, g_comp1.get_id_node_map()[0].get_parents())
+        # After icompose, inputs are updated to g_comp2's shifted input [2].
+        self.assertEqual(g_comp1.get_inputs_ids(), [2])
+
+    def test_compose(self):
+        # Test compose which returns a new graph resulting from composition.
+        # Use similar graphs as in test_icompose.
+        n0 = node(0, 'x', {}, {1:1})
+        n1 = node(1, 'y', {0:1}, {})
+        g_comp1 = open_digraph(
+            inputs=[0],
+            outputs=[1],
+            nodes=[n0, n1]
+        )
+        n2 = node(0, 'p', {}, {1:1})
+        n3 = node(1, 'q', {0:1}, {})
+        g_comp2 = open_digraph(
+            inputs=[0],
+            outputs=[1],
+            nodes=[n2, n3]
+        )
+        composed = g_comp1.compose(g_comp2)
+        # Ensure that neither original graph was mutated.
+        self.assertEqual(len(g_comp1.get_nodes_ids()), 2)
+        self.assertEqual(len(g_comp2.get_nodes_ids()), 2)
+        # Composed graph should have 4 nodes.
+        self.assertEqual(len(composed.get_nodes_ids()), 4)
+        # Check that the composition edge exists.
+        # g_comp2 shifts: node 1 becomes 3; expect an edge from 3 to original input (0) in g_comp1.
+        self.assertIn(3, composed.get_id_node_map()[0].get_parents())
+        # Composed inputs are taken from g_comp2 (shifted input should be 2)
+        self.assertEqual(composed.get_inputs_ids(), [2])
+
+    def test_identity(self):
+        # Test the identity method with n elements.
+        n = 4
+        ident = open_digraph.identity(n)
+        # For each of n iterations, identity adds one node (as input)
+        # and then adds an output node. So the total node count is 2*n.
+        self.assertEqual(len(ident.get_nodes_ids()), 2 * n)
+        self.assertEqual(len(ident.get_inputs_ids()), n)
+        self.assertEqual(len(ident.get_outputs_ids()), n)
+        # For each output node, check that it has exactly one parent.
+        for out_id in ident.get_outputs_ids():
+            parents = ident.get_id_node_map()[out_id].get_parents()
+            self.assertEqual(len(parents), 1)
+            # and that the parent is in the inputs of the identity graph? (not necessarily same id,
+            # but typically the output node comes from an input added in the same iteration)
+            par = list(parents.keys())[0]
+            self.assertIn(par, ident.get_nodes_ids())
+
+    def test_connected_components(self):
+        # Create a graph with two disconnected components.
+        # Component 1: 0 -> 1; Component 2: 2 -> 3 -> 4
+        comp_graph = open_digraph.empty()
+        # Add nodes for comp1
+        n0 = comp_graph.add_node('comp1_a')
+        n1 = comp_graph.add_node('comp1_b')
+        comp_graph.add_edge(n0, n1)
+        # Add nodes for comp2
+        n2 = comp_graph.add_node('comp2_a')
+        n3 = comp_graph.add_node('comp2_b')
+        n4 = comp_graph.add_node('comp2_c')
+        comp_graph.add_edge(n2, n3)
+        comp_graph.add_edge(n3, n4)
+        total_nodes = set(comp_graph.get_nodes_ids())
+        count, components = comp_graph.connected_components()
+        # We expect 2 connected components.
+        self.assertEqual(count, 2)
+        # Validate that the union of components is the full set of nodes.
+        comp_nodes = set()
+        for comp in components.values():
+            comp_nodes.update(comp)
+        self.assertEqual(comp_nodes, total_nodes)
+
+    def test_split(self):
+        # Using the graph from test_connected_components.
+        split_graphs = None
+        comp_graph = open_digraph.empty()
+        # Component 1: 0 -> 1
+        n0 = comp_graph.add_node('comp1_a')
+        n1 = comp_graph.add_node('comp1_b')
+        comp_graph.add_edge(n0, n1)
+        # Component 2: 2 -> 3 -> 4
+        n2 = comp_graph.add_node('comp2_a')
+        n3 = comp_graph.add_node('comp2_b')
+        n4 = comp_graph.add_node('comp2_c')
+        comp_graph.add_edge(n2, n3)
+        comp_graph.add_edge(n3, n4)
+        split_graphs = comp_graph.split()
+        # The split() method should return a list with 2 graphs
+        self.assertEqual(len(split_graphs), 2)
+        # Collect all node ids from split graphs and compare to original
+
+        for graph in split_graphs[0].get_nodes():
+            self.assertIn(graph.get_label(), ["comp1_a", "comp1_b"])
+        for graph in split_graphs[1].get_nodes():
+            self.assertIn(graph.get_label(), ["comp2_a", "comp2_b", "comp2_c"])
+            
+        self.assertEqual(len(split_graphs[0].get_nodes()), 2)
+        self.assertEqual(len(split_graphs[1].get_nodes()), 3)
+
 
 if __name__ == "__main__":
     unittest.main()
