@@ -952,6 +952,28 @@ class open_digraph: #for open directed graph
                 
         
         return res
+    
+    def common_ansestors(self, n1: int , n2: int) -> dict[int,tuple[int,int]]:
+        """
+        Common_ansestors returns a dictionary that contains common nodes of two given nodes, along with distances to each of them
+
+        Args:
+            n1(int) = id of a first node
+            n2(int) = id of a second node
+        Returns:
+            {node_id:(distance_to_the_node_1, distance_to_the_node_2)}
+        """
+        assert n1 in self.get_nodes_ids()
+        assert n2 in self.get_nodes_ides()
+
+        dist1, _ = dijkstra(self, n1, direction=-1)
+        dist2, _ = dijkstra(self,n2,direction=-1)
+
+        common = set(dist1.keys()) & set(dist2.keys())
+
+        result = {ans: (dist1[ans], dist2[ans]) for ans in common}
+
+        return result
 
 def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))):
     return int(start + (bound-start)*number_generator())
@@ -1095,6 +1117,12 @@ def shortest_path(g: open_digraph, src: int, tgt: int, direction: None | int) ->
     res.append(src)
 
     return list(reversed(res))
+
+    
+
+    
+
+
 
 
 
