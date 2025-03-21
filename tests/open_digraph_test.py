@@ -1068,7 +1068,7 @@ class DijkstraTest(unittest.TestCase):
         graph_s.add_output_node(9)
 
         # bidirectional
-        dist, prev = dijkstra(graph_s, 3, None)
+        dist, prev = graph_s.dijkstra(3, None)
         self.assertEqual(
                 dist,
                 {3: 0, 2: 1, 4: 1, 7: 1, 0: 2, 6: 2, 5: 2, 8: 2, 9: 3, 1: 3, 10: 4}
@@ -1079,7 +1079,7 @@ class DijkstraTest(unittest.TestCase):
         )
 
         # parents only
-        dist, prev = dijkstra(graph_s, 3, 1)
+        dist, prev = graph_s.dijkstra(3, 1)
         self.assertEqual(
                 dist,
                 {3: 0, 4: 1, 7: 1, 6: 2, 8: 2, 9: 3, 10: 4}
@@ -1090,7 +1090,7 @@ class DijkstraTest(unittest.TestCase):
         )
 
         # children only
-        dist, prev = dijkstra(graph_s, 3, -1)
+        dist, prev = graph_s.dijkstra(3, -1)
         self.assertEqual(
                 dist,
                 {2: 1, 3: 0}
@@ -1101,11 +1101,11 @@ class DijkstraTest(unittest.TestCase):
         )
 
         # unreachable nodes
-        sh_path = shortest_path(graph_s, 3, 5, 1)
+        sh_path = graph_s.shortest_path(3, 5, 1)
         self.assertEqual(sh_path, None)
 
         # shortes path
-        sh_path = shortest_path(graph_s, 3, 9, 1)
+        sh_path = graph_s.shortest_path(3, 9, 1)
         self.assertEqual(sh_path, [3, 4, 6, 9])
 
 if __name__ == "__main__":
