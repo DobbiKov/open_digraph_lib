@@ -47,6 +47,7 @@ graph_g = open_digraph([0,1], [8, 9, 10], [m0, m1, m2, m3, m4, m5, m6, m7, m01, 
 # dijkstra test
 dist, prev = dijkstra(graph_s, 3, None)
 print("Dist:")
+print(dist)
 for k in dist.keys():
     label = graph_s.get_id_node_map()[k].get_label()
     print(f"\t{label}:{dist[k]}")

@@ -1049,6 +1049,64 @@ class TestGraphOperations(unittest.TestCase):
         self.assertEqual(len(split_graphs[0].get_nodes()), 2)
         self.assertEqual(len(split_graphs[1].get_nodes()), 3)
 
+class DijkstraTest(unittest.TestCase):
+    def test_dijkstra(self):
+        n0 = node(0, 'x0', {}, {4:1})
+        n1 = node(1, 'x1', {}, {5:1} )
+        n2 = node(2, 'x2', {}, {3:1})
+        n3 = node(3, 'copy', {2:1}, {4:1, 7:1})
+        n4 = node(4, '|', {0:0, 3:1}, {6:1})
+        n5 = node(5, 'copy', {1:1}, {6:1, 7:1})
+        n6 = node(6, '|', {4:1, 5:1}, {9:1})
+        n7 = node(7, '&', {5:1, 3:1},{8:1})
+        n8 = node(8, '~', {7:1}, {9:1})
+        n9 = node(9, '&', {6:1, 8:1}, {})
+
+        graph_s = open_digraph(
+            [0,1,2], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+        )
+        graph_s.add_output_node(9)
+
+        # bidirectional
+        dist, prev = dijkstra(graph_s, 3, None)
+        self.assertEqual(
+                dist,
+                {3: 0, 2: 1, 4: 1, 7: 1, 0: 2, 6: 2, 5: 2, 8: 2, 9: 3, 1: 3, 10: 4}
+        )
+        self.assertEqual(
+                prev,
+                {2: 3, 4: 3, 7: 3, 0: 4, 6: 4, 5: 7, 8: 7, 9: 6, 1: 5, 10: 9}
+        )
+
+        # parents only
+        dist, prev = dijkstra(graph_s, 3, 1)
+        self.assertEqual(
+                dist,
+                {3: 0, 4: 1, 7: 1, 6: 2, 8: 2, 9: 3, 10: 4}
+        )
+        self.assertEqual(
+                prev,
+                {4: 3, 7: 3, 6: 4, 8: 7, 9: 6, 10: 9}
+        )
+
+        # children only
+        dist, prev = dijkstra(graph_s, 3, -1)
+        self.assertEqual(
+                dist,
+                {2: 1, 3: 0}
+        )
+        self.assertEqual(
+                prev,
+                {2: 3}
+        )
+
+        # unreachable nodes
+        sh_path = shortest_path(graph_s, 3, 5, 1)
+        self.assertEqual(sh_path, None)
+
+        # shortes path
+        sh_path = shortest_path(graph_s, 3, 9, 1)
+        self.assertEqual(sh_path, [3, 4, 6, 9])
 
 if __name__ == "__main__":
     unittest.main()
