@@ -1029,3 +1029,73 @@ def graph_from_adjacency_matrix(mat):
             for k in range(mat[i][j]):
                 g.add_edge(i, j)
     return g
+
+def dijkstra(g: open_digraph, src: int, direction: None | int, tgt: None | int = None) -> tuple[dict[int, int], dict[int, int]]:
+    """
+    Dijsktra algorithm that returns a dictionary of nodes accessible from the given node *src* with values of distances to those accessible nodes
+
+    Args:
+        g(open_digraph) = the graph to work with
+        src(int) = id of the node to count distances for
+        direction(None, -1, 1) = direction in which to count distances (-1 = parents only, 1 = children only, None = both)
+        tgt(None or int) = None if count distances to each accessible node. Or id to the node we're interested to count the shortest path to
+    Returns:
+        ({node_id:distance_to_the_node}, {node_id:id_of_prev_node_we_counted_shortest_dist_from})
+    """
+    assert src in g.get_nodes_ids()
+    assert direction == None or direction == 1 or direction == -1
+    assert tgt == None or tgt in g.get_nodes_ids()
+    Q = [src]
+    dist = {src: 0}
+    prev = {}
+    while len(Q) != 0:
+        u = min(Q, key=lambda x: dist[x])
+
+        # if u = tgt, then we found shortest path to tgt, we can stop here
+        if tgt != None and u == tgt:
+            return dist, prev
+
+        Q.remove(u)
+        neighbours = []
+        if direction == None or direction == -1:
+            for n_id in g.get_id_node_map()[u].get_parents().keys():
+                neighbours.append(n_id)
+        if direction == None or direction == 1:
+            for n_id in g.get_id_node_map()[u].get_children().keys():
+                neighbours.append(n_id)
+
+        for v in neighbours:
+            if v not in dist.keys():
+                Q.append(v)
+            if v not in dist.keys() or dist[v] > dist[u] + 1:
+                dist[v] = dist[u] + 1
+                prev[v] = u
+    return dist, prev
+
+def shortest_path(g: open_digraph, src: int, tgt: int, direction: None | int) -> list[int] | None:
+    """
+    Calculates the shortest path from the source node (*src*) to the target node (*tgt*).
+
+    Args:
+        g(open_digraph) = a graph to work with
+        src(int) = id of the source node
+        tgt(int) = id of the target node
+    Returns:
+        list(int) = the path or None if there's no existing path from *src* to *tgt*
+    """
+    dist, prev = dijkstra(g, src, direction, tgt)
+    res = []
+    curr_n = tgt
+    if src not in dist.keys() or tgt not in dist.keys():
+        return None
+    while curr_n != src:
+        res.append(curr_n)
+        curr_n = prev[curr_n]
+
+    res.append(src)
+
+    return list(reversed(res))
+
+
+
+

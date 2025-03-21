@@ -25,7 +25,7 @@ graph_s = open_digraph(
     [0,1,2], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
 )
 graph_s.add_output_node(9)
-# graph_s.display("graph_s")
+graph_s.display("graph_s")
 
 # Another digraph example
 m0 = node(0, 'a', {}, {2:1})
@@ -34,7 +34,7 @@ m2 = node(2, '&', {0:1, 1:1}, {3:1, 8:1})
 m3 = node(3, '~', {2:1}, {4:1, 9:1})
 m4 = node(4, 'copy', {3:1}, {5:1, 6:1})
 m5 = node(5, '|', {4:1}, {7:1, 10:1})
-m6 = node(6, '|', {4:1}, {7:1})¯
+m6 = node(6, '|', {4:1}, {7:1})
 m7 = node(7, '&', {5:1, 6:1}, {})
 m01 = node(8, '01', {2:1}, {})
 m02 = node(9, '02', {3:1}, {})
@@ -44,29 +44,46 @@ graph_g = open_digraph([0,1], [8, 9, 10], [m0, m1, m2, m3, m4, m5, m6, m7, m01, 
 # graph_g.add_output_node(7)
 # graph_g.display("graph_g")
 
+# dijkstra test
+dist, prev = dijkstra(graph_s, 3, None)
+print("Dist:")
+for k in dist.keys():
+    label = graph_s.get_id_node_map()[k].get_label()
+    print(f"\t{label}:{dist[k]}")
+print("Prev:")
+print(prev)
+
+sh_path = shortest_path(graph_s, 3, 5, 1)
+if sh_path == None:
+    print("THere's no such path")
+    sh_path = []
+for n_id in sh_path:
+    label = graph_s.get_id_node_map()[n_id].get_label()
+    print(f"{label} -> ", end=" ")
+print()
 
 
-newg = graph_s.parallel(graph_g)
-
-# print(newg.split())
-newg.display("parallel")
-
-
-new_c = graph_s.compose(graph_g)
-# new_c.display("composition")
-
-
-
-id4 = open_digraph.identity(4)
-# id4.display("identity")
-
-
-print(newg.connected_components())
-
-i = 0
-for k in newg.split():
-    k.display(f"components_{i}")
-    i+=1
+# newg = graph_s.parallel(graph_g)
+#
+# # print(newg.split())
+# newg.display("parallel")
+#
+#
+# new_c = graph_s.compose(graph_g)
+# # new_c.display("composition")
+#
+#
+#
+# id4 = open_digraph.identity(4)
+# # id4.display("identity")
+#
+#
+# print(newg.connected_components())
+#
+# i = 0
+# for k in newg.split():
+#     k.display(f"components_{i}")
+#     i+=1
 
 
 # newg.icompose(graph_g)
