@@ -1016,13 +1016,14 @@ class open_digraph: #for open directed graph
                     prev[v] = u
         return dist, prev
 
-    def shortest_path(self, src: int, tgt: int, direction: None | int) -> list[int] | None:
+    def shortest_path(self, src: int, tgt: int, direction: None | int = None) -> list[int] | None:
         """
         Calculates the shortest path from the source node (*src*) to the target node (*tgt*).
 
         Args:
             src(int) = id of the source node
             tgt(int) = id of the target node
+            direction(None, -1, 1) = direction in which to count distances (-1 = parents only, 1 = children only, None = both)
         Returns:
             list(int) = the path or None if there's no existing path from *src* to *tgt*
         """

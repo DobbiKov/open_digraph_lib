@@ -1107,6 +1107,30 @@ class DijkstraTest(unittest.TestCase):
         # shortes path
         sh_path = graph_s.shortest_path(3, 9, 1)
         self.assertEqual(sh_path, [3, 4, 6, 9])
+    def test_common_ancestors(self):
+        n0 = node(0, 'x0', {}, {4:1})
+        n1 = node(1, 'x1', {}, {5:1} )
+        n2 = node(2, 'x2', {}, {3:1})
+        n3 = node(3, 'copy', {2:1}, {4:1, 7:1})
+        n4 = node(4, '|', {0:0, 3:1}, {6:1})
+        n5 = node(5, 'copy', {1:1}, {6:1, 7:1})
+        n6 = node(6, '|', {4:1, 5:1}, {9:1})
+        n7 = node(7, '&', {5:1, 3:1},{8:1})
+        n8 = node(8, '~', {7:1}, {9:1})
+        n9 = node(9, '&', {6:1, 8:1}, {})
+
+        graph_s = open_digraph(
+            [0,1,2], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+        )
+        graph_s.add_output_node(9)
+        some_ancestors = graph_s.common_ancestors(6, 8)
+
+        self.assertEqual(some_ancestors, {1: (2, 3), 2: (3, 3), 3: (2, 2), 5: (1, 2)})
+        for i in [1, 2, 3, 5]:
+            self.assertNotEqual(graph_s.shortest_path(i, 6, 1), None)
+            self.assertNotEqual(graph_s.shortest_path(i, 8, 1), None)
+
+        self.assertEqual(graph_s.common_ancestors(3, 5), {})
 
 if __name__ == "__main__":
     unittest.main()
