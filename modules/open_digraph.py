@@ -953,7 +953,7 @@ class open_digraph: #for open directed graph
         
         return res
     
-    def common_ansestors(self, n1: int , n2: int) -> dict[int,tuple[int,int]]:
+    def common_ancestors(self, n1: int , n2: int) -> dict[int,tuple[int,int]]:
         """
         Common_ansestors returns a dictionary that contains common nodes of two given nodes, along with distances to each of them
 
