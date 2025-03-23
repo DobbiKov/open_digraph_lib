@@ -964,10 +964,10 @@ class open_digraph: #for open directed graph
             {node_id:(distance_to_the_node_1, distance_to_the_node_2)}
         """
         assert n1 in self.get_nodes_ids()
-        assert n2 in self.get_nodes_ides()
+        assert n2 in self.get_nodes_ids()
 
-        dist1, _ = dijkstra(self, n1, direction=-1)
-        dist2, _ = dijkstra(self,n2,direction=-1)
+        dist1, _ = self.dijkstra(n1, direction=-1)
+        dist2, _ = self.dijkstra(n2,direction=-1)
 
         common = set(dist1.keys()) & set(dist2.keys())
 
