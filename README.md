@@ -6,7 +6,7 @@
 - Ivan Kharkov (ivan.kharkov@etu-upsaclay.fr)
 
 ## Additional info
-Repository: **https://github.com/DobbiKov/https://github.com/DobbiKov/projet_info_s4**
+Repository: [**https://github.com/DobbiKov/open_digraph_lib**](https://github.com/DobbiKov/open_digraph_lib)
 
 ## Documenation
 This library contains the documentation in the `/docs` folder. The starting point can be founded in [this](./docs/DOC_OVERVIEW.md) file.
