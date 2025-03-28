@@ -6,6 +6,8 @@ root = os.path.normpath(os.path.join(__file__, './../../'))
 sys.path.append(root) #allows us to fetch files from the project root
 import unittest
 from modules.open_digraph import *
+from modules.open_digraph_mixins.open_digraph_matrix_mixin import *
+from modules.node import node
 
 class InitTest(unittest.TestCase):
     def test_init_node(self):
@@ -587,7 +589,7 @@ class TestGraphWithMatrix(unittest.TestCase):
             [0, 0, 1],
             [1, 0, 0]
         ]
-        g = graph_from_adjacency_matrix(mat)
+        g = open_digraph.from_matrix(mat)
         g.assert_is_well_formed()
 
     def test_graph_from_empty_adjacency_matrix(self):
@@ -596,7 +598,7 @@ class TestGraphWithMatrix(unittest.TestCase):
             [0, 0, 0],
             [0, 0, 0]
         ]
-        g = graph_from_adjacency_matrix(mat)
+        g = open_digraph.from_matrix(mat)
         g.assert_is_well_formed()
     
     def test_random_symetric_int_matrix(self):
@@ -610,7 +612,7 @@ class TestGraphWithMatrix(unittest.TestCase):
 
     def test_well_formed_from_random_matrix(self):
         mat = random_int_matrix(5, 9)
-        g = graph_from_adjacency_matrix(mat)
+        g = open_digraph.from_matrix(mat)
         g.assert_is_well_formed()
 
     def test_random_graph(self):
