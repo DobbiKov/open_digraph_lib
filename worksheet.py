@@ -22,14 +22,11 @@ n8 = node(8, '~', {7:1}, {9:1})
 n9 = node(9, '& 2', {6:1, 8:1}, {})
 
 graph_s = open_digraph(
-    [0,1,2], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+    [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
 )
 graph_s.add_output_node(9)
-graph_s.display("graph_s")
+graph_s.display("graph_s", verbose=True)
 
-res = graph_s.common_ancestors(6, 8)
+res = graph_s.sort_topologicly()
 print(res)
-for key in res.keys():
-    label = graph_s.get_id_node_map()[key].get_label()
-    print(f"{label}: {res[key]}")
 

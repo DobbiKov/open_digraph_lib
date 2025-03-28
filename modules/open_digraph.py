@@ -671,6 +671,72 @@ class open_digraph: #for open directed graph
         Tests if a graph is cyclic
         """
         return not self.is_acyclic()
+
+    def sort_topologicly(self) -> list[list[int]]:
+        """
+        Sorts the graph topologicly and returns list of lists of ids in the compressed to the top order
+
+        Returns:
+            list[list[int]]
+        """
+        assert self.is_acyclic()
+        g = self.copy()
+
+        g.remove_nodes_by_id(g.get_inputs_ids())
+        g.remove_nodes_by_id(g.get_outputs_ids())
+
+        def without_parents(graph: open_digraph):
+            res = []
+            for idx in graph.get_nodes_ids():
+                if len( graph.get_id_node_map()[idx].get_parents() ) == 0:
+                    res.append(idx)
+            return res
+
+        res = []
+        while not g.is_empty():
+            w_out_parents = without_parents(g)
+            assert len(w_out_parents) != 0
+            res.append(w_out_parents)
+            g.remove_nodes_by_id(w_out_parents)
+        return res
+    def get_node_depth(self, node_id: int) -> None | int:
+        """
+        Returns a depth of the given node (minimum: 1)
+
+        Args: 
+            node_id(int) - id of the node
+        Returns:
+            int - the depth of the given node
+        """
+        g_sort = self.sort_topologicly()
+        idx = 1 
+        for l in g_sort:
+            if node_id in l:
+                return idx
+            idx += 1
+        return None
+
+    def get_graph_depth(self) -> int:
+        """
+        Returns the graph's depth (minimum: 1 except if the graph is empty, then 0)
+        """
+        return len(self.sort_topologicly())
+
+    def get_longest_path(self, u: int, v: int) -> tuple[int, list[int]] | None:
+        dist = {u: 0}
+        prev = {u: u}
+
+        k = -1
+        sort_ls = self.sort_topologicly()
+        for i, l in enumerate(sort_ls):
+            if u in l:
+                k = i
+                break
+        if k == -1:
+            return None
+        for i in range(k+1, len(sort_ls)):
+            pass
+
     
     @classmethod
     def from_dot_file(cls, path : str, verbose = False):
@@ -792,17 +858,18 @@ class open_digraph: #for open directed graph
                         f.write(f"v{node.get_id()} -> v{int(child)};\n")
             f.write("}\n")
             f.close()
-    def display(self, file_name='display_graph', dir="display"):
+    def display(self, file_name='display_graph', dir="display", verbose: bool = False):
         """
         Displays the graph in a pdf file
         Args:
             file_name(str) - file name that the file will have (default: display_graph)
             dir(str) - folder where the files to save to (default: display)
+            verbose(bool) - default: False, if set to true, the node's id will be written near the label
         """
         os.system(f"mkdir -p {dir}")
         file_name_dot = f"{file_name}.dot"
         file_name_pdf = f"{file_name}.pdf"
-        self.save_as_dot_file(f"./{dir}/{file_name_dot}")
+        self.save_as_dot_file(f"./{dir}/{file_name_dot}", verbose)
         os.system(f"dot -Tpdf ./{dir}/{file_name_dot} -o ./{dir}/{file_name_pdf}")
 
         os.system(f"open ./{dir}/{file_name_pdf}")

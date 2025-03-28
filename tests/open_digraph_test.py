@@ -1132,5 +1132,56 @@ class DijkstraTest(unittest.TestCase):
 
         self.assertEqual(graph_s.common_ancestors(3, 5), {})
 
+class LongestPathTest(unittest.TestCase):
+    def setUp(self):
+        n0 = node(0, 'x0', {}, {4:1})
+        n1 = node(1, 'x1', {}, {5:1} )
+        n2 = node(2, 'x2', {}, {3:1})
+        n3 = node(3, 'copy', {2:1}, {4:1, 7:1})
+        n4 = node(4, '|', {0:0, 3:1}, {6:1})
+        n5 = node(5, 'copy', {1:1}, {6:1, 7:1})
+        n6 = node(6, '|', {4:1, 5:1}, {9:1})
+        n7 = node(7, '&', {5:1, 3:1},{8:1})
+        n8 = node(8, '~', {7:1}, {9:1})
+        n9 = node(9, '&', {6:1, 8:1}, {})
+
+        graph_s = open_digraph(
+            [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+        )
+        graph_s.add_output_node(9)
+        self.g = graph_s
+    def test_topological_sort(self):
+        res = self.g.sort_topologicly()
+        self.assertEqual(res, [[0, 1, 2], [3, 5], [4, 7], [6, 8], [9]])
+    def test_cyclic_raises_exception(self):
+        n0 = node(0, 'x0', {}, {1:1})
+        n1 = node(1, 'x1', {0:1, 3:1}, {2:1})
+        n2 = node(2, 'x2', {1:1}, {3:1})
+        n3 = node(3, 'x3', {2:1}, {1:1})
+        graph = open_digraph([], [], [n0, n1, n2, n3])
+        self.assertRaises(AssertionError, graph.sort_topologicly)
+
+    def test_node_depth(self):
+        self.assertEqual(self.g.get_node_depth(0), 1)
+        self.assertEqual(self.g.get_node_depth(1), 1)
+        self.assertEqual(self.g.get_node_depth(2), 1)
+
+        self.assertEqual(self.g.get_node_depth(3), 2)
+        self.assertEqual(self.g.get_node_depth(5), 2)
+
+        self.assertEqual(self.g.get_node_depth(4), 3)
+        self.assertEqual(self.g.get_node_depth(7), 3)
+
+        self.assertEqual(self.g.get_node_depth(6), 4)
+        self.assertEqual(self.g.get_node_depth(8), 4)
+
+        self.assertEqual(self.g.get_node_depth(9), 5)
+
+        self.assertEqual(self.g.get_node_depth(10), None)
+
+    def test_graph_depth(self):
+        self.assertEqual(self.g.get_graph_depth(), 5)
+        self.assertEqual(open_digraph.empty().get_graph_depth(), 0)
+
 if __name__ == "__main__":
     unittest.main()
