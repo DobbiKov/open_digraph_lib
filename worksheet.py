@@ -27,6 +27,9 @@ graph_s = open_digraph(
 graph_s.add_output_node(9)
 graph_s.display("graph_s", verbose=True)
 
-res = graph_s.sort_topologicly()
+res = graph_s.longest_path(1, 2)
 print(res)
+
+# res = graph_s.sort_topologicly()
+# print(res)
 

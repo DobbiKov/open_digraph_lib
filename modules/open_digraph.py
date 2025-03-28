@@ -722,7 +722,25 @@ class open_digraph: #for open directed graph
         """
         return len(self.sort_topologicly())
 
-    def get_longest_path(self, u: int, v: int) -> tuple[int, list[int]] | None:
+    def longest_path(self, u: int, v: int) -> tuple[int, list[int]] | None:
+        """
+        Returns longest path with it's length between two nodes
+
+        Args:
+            u(int) - the starting node
+            v(int) - the ending node
+        Returns:
+            (int, list(int)) - (length, path)
+        """
+        assert u in self.get_nodes_ids() and v in self.get_nodes_ids()
+        def get_path_by_dict(d, n_from, n_to):
+            res = [n_to]
+            curr = n_to
+            while curr != n_from:
+                curr = d[curr]
+                res.append(curr)
+            res.reverse()
+            return res
         dist = {u: 0}
         prev = {u: u}
 
@@ -735,7 +753,19 @@ class open_digraph: #for open directed graph
         if k == -1:
             return None
         for i in range(k+1, len(sort_ls)):
-            pass
+            l = sort_ls[i]
+            for w in l:
+                curr_d = dist[w] if w in dist.keys() else -1
+                for p_id in self.get_id_node_map()[w].get_parents():
+                    if p_id not in dist.keys():
+                        continue
+                    if dist[p_id] + 1 < curr_d:
+                        continue
+                    dist[w] = dist[p_id] + 1
+                    prev[w] = p_id
+                if w == v:
+                    return (dist[v], get_path_by_dict(prev, u, v))
+        return None
 
     
     @classmethod

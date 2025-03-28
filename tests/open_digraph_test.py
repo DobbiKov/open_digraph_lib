@@ -1183,5 +1183,12 @@ class LongestPathTest(unittest.TestCase):
         self.assertEqual(self.g.get_graph_depth(), 5)
         self.assertEqual(open_digraph.empty().get_graph_depth(), 0)
 
+    def test_longest_paht(self):
+        (length, path) = self.g.longest_path(1, 9) or (0, [])
+        self.assertEqual(length, 4)
+        self.assertEqual(path, [1, 5, 7, 8, 9])
+
+        self.assertEqual(self.g.longest_path(1, 2), None)
+
 if __name__ == "__main__":
     unittest.main()
