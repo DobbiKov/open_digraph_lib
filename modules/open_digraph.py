@@ -71,7 +71,33 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
         #change inputs and outputs ids in the list in the graph
         self.inputs = [id + n for id in self.get_inputs_ids()]
         self.outputs = [id + n for id in self.get_outputs_ids()]
-       
+    
+    def fuse_nodes(self, id1: int, id2: int, label: str | None) -> None:
+        """
+        Fuses two nodes from two given ids. Default: label from the first id.
+        """
+        if id1 == id2: #if ids are the same we are doing nothing
+            return 
+
+        node1 = self.__getitem__(id1)
+        assert node1 is not None
+        node2 = self.__getitem__(id2)
+        assert node2 is not None
+
+        if label is not None:
+            node1.set_label(label)
+        
+        for parent_id, mult in node2.get_parents():
+            for _ in range(mult):
+                self.add_edge(parent_id, id1)
+        
+        for child_id, mult  in node2.get_children():
+            for _ in range(mult):
+                self.add_edge(id1, child_id)
+
+        self.remove_node_by_id(id2)
+        
+               
 
     #Setters
     def set_inputs(self, inputs: list[int]): self.inputs = inputs
