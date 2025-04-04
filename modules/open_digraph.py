@@ -75,6 +75,10 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
     def fuse_nodes(self, id1: int, id2: int, label: str | None) -> None:
         """
         Fuses two nodes from two given ids. Default: label from the first id.
+
+        Args:
+            id1(int) - an id of the first node
+            id2(int) - an id of the second node
         """
         if id1 == id2: #if ids are the same we are doing nothing
             return 
@@ -87,11 +91,11 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
         if label is not None:
             node1.set_label(label)
         
-        for parent_id, mult in node2.get_parents():
+        for parent_id, mult in node2.get_parents().items():
             for _ in range(mult):
                 self.add_edge(parent_id, id1)
         
-        for child_id, mult  in node2.get_children():
+        for child_id, mult  in node2.get_children().items():
             for _ in range(mult):
                 self.add_edge(id1, child_id)
 
