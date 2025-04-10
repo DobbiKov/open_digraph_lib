@@ -58,6 +58,9 @@ class bool_circ(open_digraph):
             elif label in  ['1', '0']:
                 if out_d != 0:
                     return False
+            elif label.startswith("x"):
+                if in_d != 0 or out_d != 1:
+                    return False
             else: 
                 return False
         return True
@@ -86,12 +89,11 @@ def parse_parentheses(s: str):
     """
     g  = open_digraph.empty()
     n = g.add_node()
-    out = g.add_output_node(n)
+    out = g.add_output_node(n, label="")
     current_node  = n
 
     s2 = ''
     for char in s:
-        print(char)
         if(char=='('):
             g[current_node].set_label(s2)
             new_node = g.add_node()
@@ -99,8 +101,9 @@ def parse_parentheses(s: str):
             current_node = new_node
             s2 = ''
         elif(char==')'):
-            g[current_node].set_label(s2)
-            current_node = g[current_node].get_children()[0]
+            curr_label = g[current_node].get_label()
+            g[current_node].set_label(curr_label + s2)
+            current_node = list(g[current_node].get_children().keys())[0]
             s2 = ''
         else:
             s2 += char
