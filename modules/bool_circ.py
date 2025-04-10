@@ -127,4 +127,4 @@ def parse_parentheses(*args) -> T:
             g[idx].set_label('')
             g.add_input_node(idx, label)
     
-    return g, var_names
+    return bool_circ(g), var_names
