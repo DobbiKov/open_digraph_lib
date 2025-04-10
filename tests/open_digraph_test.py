@@ -115,6 +115,23 @@ class InitTest(unittest.TestCase):
         g0.add_edge(2, 3)
         self.assertEqual(n2.get_children(), {3:1})
         self.assertEqual(n3.get_parents(), {2:1})
+    def not_well_formed_2(self):
+        n0 = node(0, 'x0', {}, {4:1})
+        n1 = node(1, 'x1', {}, {5:1} )
+        n2 = node(2, 'x2', {}, {3:1})
+        n3 = node(3, 'copy', {2:1}, {4:1, 7:1})
+        n4 = node(4, '|', {0:1, 3:1}, {6:1})
+        n5 = node(5, 'copy', {1:1}, {6:1, 7:1})
+        n6 = node(6, '|', {4:1, 5:1}, {9:1})
+        n7 = node(7, '&', {5:1, 3:1},{8:1})
+        n8 = node(8, '~', {7:1}, {9:1})
+        n9 = node(9, '&', {6:1, 8:1}, {})
+
+        graph_s = open_digraph(
+            [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+        )
+        self.assertRaises(AssertionError, graph_s.assert_is_well_formed)
+
     def test_add_empty_node(self):
         n0 = node(0, 'i', {}, {1:1})
         n1 = node(1, 'i', {0:0}, {3:3})
@@ -1191,6 +1208,119 @@ class LongestPathTest(unittest.TestCase):
         self.assertEqual(path, [1, 5, 7, 8, 9])
 
         self.assertEqual(self.g.longest_path(1, 2), None)
+
+
+class ParenthesesTest(unittest.TestCase):
+    def test_fusion(self):
+        n0 = node(0, 'x0', {}, {4:1})
+        n1 = node(1, 'x1', {}, {5:1} )
+        n2 = node(2, 'x2', {}, {3:1})
+        n3 = node(3, 'copy', {2:1}, {4:1, 7:1})
+        n4 = node(4, '|', {0:1, 3:1}, {6:1})
+        n5 = node(5, 'copy', {1:1}, {6:1, 7:1})
+        n6 = node(6, '|', {4:1, 5:1}, {9:1})
+        n7 = node(7, '&', {5:1, 3:1},{8:1})
+        n8 = node(8, '~', {7:1}, {9:1})
+        n9 = node(9, '&', {6:1, 8:1}, {})
+
+        graph_s = open_digraph(
+            [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+        )
+
+        # node 4
+        self.assertEqual(graph_s.get_id_node_map()[4].get_id(), 4)
+        self.assertEqual(graph_s.get_id_node_map()[4].get_label(), '|')
+        self.assertEqual(graph_s.get_id_node_map()[4].get_parents(), {0:1, 3:1})
+        self.assertEqual(graph_s.get_id_node_map()[4].get_children(), {6:1})
+
+        # node 3
+        self.assertEqual(graph_s.get_id_node_map()[3].get_id(), 3)
+        self.assertEqual(graph_s.get_id_node_map()[3].get_label(), 'copy')
+        self.assertEqual(graph_s.get_id_node_map()[3].get_parents(), {2:1})
+        self.assertEqual(graph_s.get_id_node_map()[3].get_children(), {4:1, 7:1})
+
+        graph_s.fuse_nodes(4, 3, "h")
+        self.assertEqual(graph_s.get_id_node_map()[4].get_id(), 4)
+        self.assertEqual(graph_s.get_id_node_map()[4].get_label(), 'h')
+        self.assertEqual(graph_s.get_id_node_map()[4].get_parents(), {0:1, 2:1})
+        self.assertEqual(graph_s.get_id_node_map()[4].get_children(), {6:1, 7:1})
+
+        self.assertNotIn(3, graph_s.get_nodes_ids())
+
+    def test_fusion_preserving_name(self):
+        n0 = node(0, 'x0', {}, {4:1})
+        n1 = node(1, 'x1', {}, {5:1} )
+        n2 = node(2, 'x2', {}, {3:1})
+        n3 = node(3, 'copy', {2:1}, {4:1, 7:1})
+        n4 = node(4, '|', {0:1, 3:1}, {6:1})
+        n5 = node(5, 'copy', {1:1}, {6:1, 7:1})
+        n6 = node(6, '|', {4:1, 5:1}, {9:1})
+        n7 = node(7, '&', {5:1, 3:1},{8:1})
+        n8 = node(8, '~', {7:1}, {9:1})
+        n9 = node(9, '&', {6:1, 8:1}, {})
+
+        graph_s = open_digraph(
+            [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+        )
+
+        # node 4
+        self.assertEqual(graph_s.get_id_node_map()[4].get_id(), 4)
+        self.assertEqual(graph_s.get_id_node_map()[4].get_label(), '|')
+        self.assertEqual(graph_s.get_id_node_map()[4].get_parents(), {0:1, 3:1})
+        self.assertEqual(graph_s.get_id_node_map()[4].get_children(), {6:1})
+
+        # node 3
+        self.assertEqual(graph_s.get_id_node_map()[3].get_id(), 3)
+        self.assertEqual(graph_s.get_id_node_map()[3].get_label(), 'copy')
+        self.assertEqual(graph_s.get_id_node_map()[3].get_parents(), {2:1})
+        self.assertEqual(graph_s.get_id_node_map()[3].get_children(), {4:1, 7:1})
+
+        graph_s.fuse_nodes(4, 3)
+        self.assertEqual(graph_s.get_id_node_map()[4].get_id(), 4)
+        self.assertEqual(graph_s.get_id_node_map()[4].get_label(), '|')
+        self.assertEqual(graph_s.get_id_node_map()[4].get_parents(), {0:1, 2:1})
+        self.assertEqual(graph_s.get_id_node_map()[4].get_children(), {6:1, 7:1})
+
+        self.assertNotIn(3, graph_s.get_nodes_ids())
+
+    def test_fusion_preserving_name_2(self):
+        n0 = node(0, 'x0', {}, {4:1})
+        n1 = node(1, 'x1', {}, {5:1} )
+        n2 = node(2, 'x2', {}, {3:1})
+        n3 = node(3, 'copy', {2:1}, {4:1, 7:1})
+        n4 = node(4, '|', {0:1, 3:1}, {6:1})
+        n5 = node(5, 'copy', {1:1}, {6:1, 7:1})
+        n6 = node(6, '|', {4:1, 5:1}, {9:1})
+        n7 = node(7, '&', {5:1, 3:1},{8:1})
+        n8 = node(8, '~', {7:1}, {9:1})
+        n9 = node(9, '&', {6:1, 8:1}, {})
+
+        graph_s = open_digraph(
+            [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
+        )
+
+        # node 4
+        self.assertEqual(graph_s.get_id_node_map()[4].get_id(), 4)
+        self.assertEqual(graph_s.get_id_node_map()[4].get_label(), '|')
+        self.assertEqual(graph_s.get_id_node_map()[4].get_parents(), {0:1, 3:1})
+        self.assertEqual(graph_s.get_id_node_map()[4].get_children(), {6:1})
+
+        # node 3
+        self.assertEqual(graph_s.get_id_node_map()[3].get_id(), 3)
+        self.assertEqual(graph_s.get_id_node_map()[3].get_label(), 'copy')
+        self.assertEqual(graph_s.get_id_node_map()[3].get_parents(), {2:1})
+        self.assertEqual(graph_s.get_id_node_map()[3].get_children(), {4:1, 7:1})
+
+        graph_s.fuse_nodes(3, 4)
+        self.assertEqual(graph_s.get_id_node_map()[3].get_id(), 3)
+        self.assertEqual(graph_s.get_id_node_map()[3].get_label(), 'copy')
+        self.assertEqual(graph_s.get_id_node_map()[3].get_children(), {6:1, 7:1})
+        self.assertEqual(graph_s.get_id_node_map()[3].get_parents(), {0:1, 2:1})
+
+        self.assertNotIn(4, graph_s.get_nodes_ids())
+
+
+
 
 if __name__ == "__main__":
     unittest.main()

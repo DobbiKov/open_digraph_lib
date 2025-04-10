@@ -72,13 +72,14 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
         self.inputs = [id + n for id in self.get_inputs_ids()]
         self.outputs = [id + n for id in self.get_outputs_ids()]
     
-    def fuse_nodes(self, id1: int, id2: int, label: str | None) -> None:
+    def fuse_nodes(self, id1: int, id2: int, label: str | None = None) -> None:
         """
         Fuses two nodes from two given ids. Default: label from the first id.
 
         Args:
             id1(int) - an id of the first node
             id2(int) - an id of the second node
+            label(str) - a custom label
         """
         if id1 == id2: #if ids are the same we are doing nothing
             return 
@@ -87,6 +88,10 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
         assert node1 is not None
         node2 = self.__getitem__(id2)
         assert node2 is not None
+
+        self.remove_parallel_edges(id1, id2)
+        self.remove_parallel_edges(id2, id1)
+        print(node2.get_parents())
 
         if label is not None:
             node1.set_label(label)
