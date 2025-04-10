@@ -63,5 +63,45 @@ class bool_circ(open_digraph):
         return True
 
 
+def parse_parentheses(s: str):
+    """
+    g ← (i.e. the boolean circuit has a node connected to an output)
+    current_node ← the id of the top node
+    s2 ← ‘ ’
+    for all char in s do
+    if char = ‘(‘ then
+    add s2 to the label of current_node
+    create a parent of current_node and make it current_node
+    s2 ← ‘ ’
+    else if char = ‘)’ then
+    add s2 to the label of current_node
+    change current_node so that it becomes its child
+    s2 ← ‘ ‘
+    else
+    add char to the end of s2
+    end if
+    end for
+    return g
     
+    """
+    g  = open_digraph.empty()
+    n = g.add_node()
+    out = g.add_output_node(n)
+    current_node  = n
 
+    s2 = ''
+    for char in s:
+        print(char)
+        if(char=='('):
+            g[current_node].set_label(s2)
+            new_node = g.add_node()
+            g.add_edge(new_node, current_node)
+            current_node = new_node
+            s2 = ''
+        elif(char==')'):
+            g[current_node].set_label(s2)
+            current_node = g[current_node].get_children()[0]
+            s2 = ''
+        else:
+            s2 += char
+    return bool_circ(g)
