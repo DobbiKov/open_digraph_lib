@@ -33,9 +33,9 @@ res = graph_s.longest_path(1, 9)
 
 
 
-circ = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(x2))")
+circ, vars = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(~(x2)))", "(x1)&(x2)")
+circ, vars = parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
 
 circ.display("circ", verbose=True)
 # res = graph_s.sort_topologicly()
-print(circ)
-
+print(vars)

@@ -1,6 +1,13 @@
 import copy
 from modules.open_digraph import node, open_digraph
 
+from typing import TYPE_CHECKING, Type, TypeVar, cast
+
+if TYPE_CHECKING:
+    from modules.open_digraph import open_digraph
+
+T = TypeVar("T", bound="open_digraph")
+
 class bool_circ(open_digraph):
     def __init__(self, g: open_digraph, debug: bool=False):
         """
@@ -46,6 +53,9 @@ class bool_circ(open_digraph):
             in_d = node.indegree()
             out_d = node.outdegree()
 
+            if node.get_id() in self.get_inputs_ids() or node.get_id() in self.get_outputs_ids(): # temporary
+                continue
+
             if label == '':
                 if in_d != 1:
                     return False
@@ -58,53 +68,63 @@ class bool_circ(open_digraph):
             elif label in  ['1', '0']:
                 if out_d != 0:
                     return False
-            elif label.startswith("x"):
-                if in_d != 0 or out_d != 1:
-                    return False
             else: 
                 return False
         return True
 
 
-def parse_parentheses(s: str):
+def parse_parentheses(*args) -> T:
     """
-    g ← (i.e. the boolean circuit has a node connected to an output)
-    current_node ← the id of the top node
-    s2 ← ‘ ’
-    for all char in s do
-    if char = ‘(‘ then
-    add s2 to the label of current_node
-    create a parent of current_node and make it current_node
-    s2 ← ‘ ’
-    else if char = ‘)’ then
-    add s2 to the label of current_node
-    change current_node so that it becomes its child
-    s2 ← ‘ ‘
-    else
-    add char to the end of s2
-    end if
-    end for
-    return g
-    
-    """
-    g  = open_digraph.empty()
-    n = g.add_node()
-    out = g.add_output_node(n, label="")
-    current_node  = n
+    Parses string to a open_digraph    
 
-    s2 = ''
-    for char in s:
-        if(char=='('):
-            g[current_node].set_label(s2)
-            new_node = g.add_node()
-            g.add_edge(new_node, current_node)
-            current_node = new_node
-            s2 = ''
-        elif(char==')'):
-            curr_label = g[current_node].get_label()
-            g[current_node].set_label(curr_label + s2)
-            current_node = list(g[current_node].get_children().keys())[0]
-            s2 = ''
-        else:
-            s2 += char
-    return bool_circ(g)
+    Args:
+        s(str) - string to parse
+
+    Returns:
+        open_digraph
+    """
+    g = open_digraph.empty()
+
+    for s in args:
+        n = g.add_node()
+        out = g.add_output_node(n, label="")
+        current_node  = n
+
+        s2 = ''
+        for char in s:
+            if(char=='('):
+                g[current_node].set_label(s2)
+                new_node = g.add_node()
+                g.add_edge(new_node, current_node)
+                current_node = new_node
+                s2 = ''
+            elif(char==')'):
+                curr_label = g[current_node].get_label()
+                g[current_node].set_label(curr_label + s2)
+                current_node = list(g[current_node].get_children().keys())[0]
+                s2 = ''
+            else:
+                s2 += char
+
+    # before = g.copy()
+
+    # fusion same variables into one node
+    id_node_map = g.get_id_node_map()
+    variables = {}
+    var_names = []
+
+    for idx in g.get_nodes_ids():
+        node = id_node_map[idx]
+        label = node.get_label()
+        if label == '' or label in ['&', '~', '|', '^']:
+            continue
+        if label in variables: # fusion
+            main_node_idx = variables[label]
+            g.fuse_nodes(main_node_idx, idx)
+        else: # not seen yet, add
+            var_names.append(label)
+            variables[label] = idx
+            g[idx].set_label('')
+            g.add_input_node(idx, label)
+    
+    return g, var_names
