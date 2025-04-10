@@ -1,4 +1,5 @@
 from modules.open_digraph import *
+from modules.bool_circ import *
 import inspect
 
 print("open_digraph:")
@@ -25,11 +26,16 @@ graph_s = open_digraph(
     [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
 )
 graph_s.add_output_node(9)
-graph_s.display("graph_s", verbose=True)
+# graph_s.display("graph_s", verbose=True)
 
 res = graph_s.longest_path(1, 9)
 print(res)
 
+
+
+circ = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(~x2))")
+
+circ.display("circ", verbose=True)
 # res = graph_s.sort_topologicly()
 # print(res)
 
