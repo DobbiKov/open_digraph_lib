@@ -112,12 +112,13 @@ class OpenDigraphAddersMixin(object):
         self.add_input_id(new_id)
         return new_id
 
-    def add_output_node(self: T, point_from_id: int) -> int:
+    def add_output_node(self: T, point_from_id: int, label: str | None = 'output') -> int:
         """
         Adds a new output node to the graph. Carefully adds the id to output_ids list and creates an edge
 
         Args:
             point_from_id(int): id of the node that new input node will be pointed from
+            label(str)(optional) - label to set for a new output node
 
         Returns:
             id of the new output node (return -1 if the node couldn't be added)
@@ -126,7 +127,7 @@ class OpenDigraphAddersMixin(object):
             return -1
         if point_from_id in self.get_outputs_ids():
             return -1
-        new_id = self.add_node('output', {}, {})
+        new_id = self.add_node(label, {}, {})
         self.add_edge(point_from_id, new_id)
         self.add_output_id(new_id)
         return new_id
