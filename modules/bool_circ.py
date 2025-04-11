@@ -1,4 +1,5 @@
 import copy
+import random
 from modules.open_digraph import node, open_digraph
 
 from typing import TYPE_CHECKING, Type, TypeVar, cast
@@ -7,6 +8,7 @@ if TYPE_CHECKING:
     from modules.open_digraph import open_digraph
 
 T = TypeVar("T", bound="open_digraph")
+TB = TypeVar("TB", bound="bool_circ")
 
 class bool_circ(open_digraph):
     def __init__(self, g: open_digraph, debug: bool=False):
@@ -72,16 +74,71 @@ class bool_circ(open_digraph):
                 return False
         return True
 
+    @classmethod
+    def generate_random_bool_circ(cls: Type[TB], graph: 'open_digraph') -> 'open_digraph':
+        """
+        Generates random boolean circuit of a given size
 
-def parse_parentheses(*args) -> T:
+        Args:
+            size(int) - the size of the circuit
+        Returns:
+            bool_circ
+        """
+        binary_operation_signs = ['&', '|', '^']
+        unary_operation_signs = ['~']
+
+
+        id_node_map = graph.get_id_node_map()
+        for node_id in graph.get_nodes_ids():
+            node = id_node_map[node_id]
+            par_num = len(list(node.get_parents().keys()))
+            chi_num = len(list(node.get_children().keys()))
+            if par_num == 0:
+                graph.add_input_node(node_id)
+
+            if chi_num == 0:
+                graph.add_output_node(node_id)
+
+            in_d = node.indegree()
+            out_d = node.outdegree()
+            if in_d == out_d and in_d == 1:
+                rand_num = random.randint(0, len(unary_operation_signs)-1)
+                rand_lab = unary_operation_signs[rand_num]
+                graph[node_id].set_label(rand_lab)
+            elif in_d == 1 and out_d > 1:
+                graph[node_id].set_label("")
+            elif in_d > 1 and out_d == 1:
+                rand_num = random.randint(0, len(binary_operation_signs)-1)
+                rand_lab = binary_operation_signs[rand_num]
+                graph[node_id].set_label(rand_lab)
+            elif in_d > 1 and out_d > 1:
+                new_id = graph.add_node('') # making new copy node
+
+                for ch_id, ch_mult in list(node.get_children().items()).copy():
+                    graph.remove_parallel_edges(node_id, ch_id) # removing children from current node
+                    for _ in range(ch_mult): # adding children to the new created copy node
+                        graph.add_edge(new_id, ch_id)
+                graph.add_edge(node_id, new_id) # pointing current node to the new one
+
+                # giving binary operation label to the current node
+                rand_num = random.randint(0, len(binary_operation_signs)-1) 
+                rand_lab = binary_operation_signs[rand_num]
+                graph[node_id].set_label(rand_lab)
+            else:
+                print(node_id, "| ", par_num, chi_num, in_d, out_d)
+
+        return graph
+
+
+def parse_parentheses(*args) -> bool_circ:
     """
     Parses string to a open_digraph    
 
     Args:
-        s(str) - string to parse
+        args - list of string to parse to a boolean circuit
 
     Returns:
-        open_digraph
+        bool_circ
     """
     g = open_digraph.empty()
 
@@ -128,3 +185,4 @@ def parse_parentheses(*args) -> T:
             g.add_input_node(idx, label)
     
     return bool_circ(g), var_names
+
