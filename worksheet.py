@@ -26,14 +26,18 @@ graph_s = open_digraph(
     [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
 )
 # graph_s.add_output_node(9)
-graph_s.display("graph_s", verbose=False)
+# graph_s.display("graph_s", verbose=False)
 
-res = graph_s.longest_path(1, 9)
+# res = graph_s.longest_path(1, 9)
 # print(res)
 
 
-# circ = bool_circ.generate_random_bool_circ(graph_s)
-# circ.display("circ")
+# graph_de_prof = 
+
+rand_g = open_digraph.random(6, 3)
+
+circ = bool_circ.generate_random_bool_circ(rand_g)
+circ.display("circ")
 
 # circ, vars = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(~(x2)))", "(x1)&(x2)")
 # circ, vars = parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
