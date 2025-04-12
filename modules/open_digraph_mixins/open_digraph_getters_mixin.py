@@ -39,7 +39,7 @@ class OpenDigraphGettersMixin(object):
         """
         return len(self.nodes)
 
-    def __getitem__(self: T, i) -> node | None:
+    def __getitem__(self: T, i) -> node:
         """
         Allow accessing a node by its ID using indexing.
 
@@ -52,7 +52,7 @@ class OpenDigraphGettersMixin(object):
         r = filter(lambda x: x.get_id() == i, self.nodes.values())
         r = list(r)
         if(len(r)==0):
-            return None
+            raise RuntimeError(f"There's no such node in the graph")
         if(len(r)>1):
             raise RuntimeError(f"Digraph has 2 elements with the same id {i}")
         return r[0] 
