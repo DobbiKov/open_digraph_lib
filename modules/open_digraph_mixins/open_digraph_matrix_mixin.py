@@ -25,7 +25,7 @@ class OpenDigraphMatrixMixin(object):
         return res
 
     @classmethod
-    def random(cls: Type[T], n: int, bound: int, inputs: int=0, outputs: int=0, form: str="free", loop_free: bool=True) -> 'open_digraph':
+    def random(cls: Type[T], n: int, bound: int, inputs: int=0, outputs: int=0, form: str="free", loop_free: bool=True, random_function  = ( lambda: random.uniform(0.9,1) )) -> 'open_digraph':
         """
         Construct a random graph given constraints and type
 
@@ -43,7 +43,7 @@ class OpenDigraphMatrixMixin(object):
 
         match form:
             case "free":
-                mat = random_int_matrix(n, bound, loop_free)
+                mat = random_int_matrix(n, bound, loop_free, random_function)
             case "DAG":
                 mat = random_triangular_int_matrix(n, bound, loop_free)
             case "oriented":
@@ -82,7 +82,7 @@ class OpenDigraphMatrixMixin(object):
 
 
 def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))) -> int:
-    return int(start + (bound-start)*number_generator())
+    return int(round(start + (bound-start)*number_generator()))
 
 def random_int_list(n, bound, number_generator = (lambda: random.betavariate(1, 5))) -> list[int]:
     return [random_int(bound, number_generator=number_generator) for _ in range(n)]
