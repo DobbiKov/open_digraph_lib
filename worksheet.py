@@ -34,7 +34,8 @@ graph_s = open_digraph(
 
 # graph_de_prof = 
 
-rand_g = open_digraph.random(6, 3)
+rand_g = open_digraph.random(6, 1, form="DAG")
+rand_g.display("rand_g")
 
 circ = bool_circ.generate_random_bool_circ(rand_g)
 circ.display("circ")

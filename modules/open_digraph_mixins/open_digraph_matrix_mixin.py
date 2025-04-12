@@ -1,4 +1,5 @@
 import random
+from loguru import logger
 from modules.node import node
 
 from typing import TYPE_CHECKING, Type, TypeVar, cast
@@ -25,7 +26,7 @@ class OpenDigraphMatrixMixin(object):
         return res
 
     @classmethod
-    def random(cls: Type[T], n: int, bound: int, inputs: int=0, outputs: int=0, form: str="free", loop_free: bool=True, random_function  = ( lambda: random.uniform(0.9,1) )) -> 'open_digraph':
+    def random(cls: Type[T], n: int, bound: int, inputs: int=0, outputs: int=0, form: str="free", loop_free: bool=True, random_function  = ( lambda: random.uniform(0,1) )) -> 'open_digraph':
         """
         Construct a random graph given constraints and type
 
@@ -45,11 +46,11 @@ class OpenDigraphMatrixMixin(object):
             case "free":
                 mat = random_int_matrix(n, bound, loop_free, random_function)
             case "DAG":
-                mat = random_triangular_int_matrix(n, bound, loop_free)
+                mat = random_triangular_int_matrix(n, bound, loop_free, random_function)
             case "oriented":
-                mat = random_oriented_int_matrix(n, bound, loop_free)
+                mat = random_oriented_int_matrix(n, bound, loop_free, random_function)
             case "undirected":
-                mat = random_symetric_int_matrix(n, bound, loop_free)
+                mat = random_symetric_int_matrix(n, bound, loop_free, random_function)
 
         # inputs outputs
         g = cls.from_matrix(mat)
