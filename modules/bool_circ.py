@@ -191,9 +191,60 @@ class bool_circ(open_digraph):
 
         return bool_circ(graph)
         # return graph
+    # @classmethod
+    # def build_adder(cls: Type['bool_circ'], n: int) -> 'bool_circ':
+        # circ = parse_parentheses("")
 
+def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
+    assert len(reg1) ==1 
+    assert len(reg2) ==1 
+    reg = [reg1[0], reg2[0]]
+    res, vars = parse_parentheses(f"((({reg[0]})&({reg[1]}))|((({reg[0]})^({reg[1]}))&({carry})))", f"((({reg[0]})^({reg[1]}))^({carry}))")
+    return res
 
-def parse_parentheses(*args) -> bool_circ:
+def build_adder(n: int, reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
+    assert len(reg1) == len(reg2)
+    assert len(reg1) == (2**n)
+
+    if n == 0:
+        return build_adder_0(reg1, reg2, carry)
+
+    sub_num = 2**(n-1) 
+    reg_1_1 = reg1[0:sub_num]
+    reg_1_2 = reg1[sub_num:]
+
+    reg_2_1 = reg2[0:sub_num]
+    reg_2_2 = reg2[sub_num:]
+
+    circ1 = build_adder(n-1, reg_1_1, reg_2_1, 0)
+    circ2 = build_adder(n-1, reg_1_2, reg_2_2, carry)
+    # for node_id in circ2.get_nodes_ids():
+    #     if circ2[node_id].label.startswith('x'):
+    #         circ2[node_id].label = circ2[node_id].label + "'"
+    
+    inputs_1 = circ1.get_inputs_ids()
+    inputs_2 = circ2.get_inputs_ids()
+
+    old_output_num = len(circ1.get_outputs_ids())
+    old_input_num = len(inputs_1)
+    n2 = old_input_num - 1
+    new_n2 = n2*2
+    new_input_num = new_n2 + 1
+
+    new_bool_circ = circ1.parallel(circ2)
+
+    output_of_second_add_n = new_bool_circ.get_outputs_ids()[old_output_num]
+    output_parent = list(new_bool_circ.get_id_node_map()[output_of_second_add_n].parents.keys())[0]
+    new_bool_circ.remove_node_by_id(output_of_second_add_n)
+
+    last_input_of_first_add_n = new_bool_circ.get_inputs_ids()[old_input_num-1]
+    input_child = list(new_bool_circ.get_id_node_map()[last_input_of_first_add_n].children.keys())[0]
+    new_bool_circ.remove_node_by_id(last_input_of_first_add_n)
+    new_bool_circ.add_edge(output_parent, input_child)
+
+    return bool_circ(new_bool_circ) # temp return
+
+def parse_parentheses(*args) -> tuple[bool_circ, list[str]]:
     """
     Parses string to a open_digraph    
 
@@ -201,7 +252,7 @@ def parse_parentheses(*args) -> bool_circ:
         args - list of string to parse to a boolean circuit
 
     Returns:
-        bool_circ
+        bool_circ, list[str] - names of the input variables
     """
     g = open_digraph.empty()
 
@@ -247,5 +298,6 @@ def parse_parentheses(*args) -> bool_circ:
             g[idx].set_label('')
             g.add_input_node(idx, label)
     
+    # return g, var_names
     return bool_circ(g), var_names
 

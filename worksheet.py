@@ -41,8 +41,12 @@ graph_s = open_digraph(
 # rand_g = open_digraph.random(6, 1, form="DAG")
 # rand_g.display("rand_g")
 
-circ = bool_circ.random_bool_circ_from_graph(graph_de_prof_td_10(), 1, 3)
-circ.display("circ")
+# circ = bool_circ.random_bool_circ_from_graph(graph_de_prof_td_10(), 1, 3)
+# circ.display("circ")
+
+circ_add_0 = build_adder(1, ['x0', 'x1'], ['x0\'', 'x1\''], 'c')
+print(circ_add_0)
+circ_add_0.display("circ_add_0")
 
 # circ, vars = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(~(x2)))", "(x1)&(x2)")
 # circ, vars = parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
