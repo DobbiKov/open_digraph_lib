@@ -69,15 +69,6 @@ class OpenDigraphComposeParallelSplitMixin(object):
         newf.icompose(g)
         return newf
     
-    @classmethod
-    def identity(cls: Type[T], n) -> 'open_digraph':
-        g = cls.empty()
-        for _ in range(n):
-            id = g.add_node()
-            g.add_input_id(id)
-            g.add_output_node(id)
-
-        return g
     def connected_components(self: T) -> tuple[int, dict[int, list[node]]]:
         """
         Returns a list of connected components of the graph

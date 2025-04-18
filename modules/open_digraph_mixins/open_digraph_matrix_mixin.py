@@ -1,4 +1,5 @@
 import random
+from loguru import logger
 from modules.node import node
 
 from typing import TYPE_CHECKING, Type, TypeVar, cast
@@ -25,7 +26,7 @@ class OpenDigraphMatrixMixin(object):
         return res
 
     @classmethod
-    def random(cls: Type[T], n: int, bound: int, inputs: int=0, outputs: int=0, form: str="free", loop_free: bool=True) -> 'open_digraph':
+    def random(cls: Type[T], n: int, bound: int, inputs: int=0, outputs: int=0, form: str="free", loop_free: bool=True, random_function  = ( lambda: random.uniform(0,1) )) -> 'open_digraph':
         """
         Construct a random graph given constraints and type
 
@@ -43,13 +44,13 @@ class OpenDigraphMatrixMixin(object):
 
         match form:
             case "free":
-                mat = random_int_matrix(n, bound, loop_free)
+                mat = random_int_matrix(n, bound, loop_free, random_function)
             case "DAG":
-                mat = random_triangular_int_matrix(n, bound, loop_free)
+                mat = random_triangular_int_matrix(n, bound, loop_free, random_function)
             case "oriented":
-                mat = random_oriented_int_matrix(n, bound, loop_free)
+                mat = random_oriented_int_matrix(n, bound, loop_free, random_function)
             case "undirected":
-                mat = random_symetric_int_matrix(n, bound, loop_free)
+                mat = random_symetric_int_matrix(n, bound, loop_free, random_function)
 
         # inputs outputs
         g = cls.from_matrix(mat)
@@ -82,25 +83,13 @@ class OpenDigraphMatrixMixin(object):
 
 
 def random_int(bound, start=0, number_generator= (lambda: random.uniform(0,1))) -> int:
-    return int(start + (bound-start)*number_generator())
+    return int(round(start + (bound-start)*number_generator()))
 
 def random_int_list(n, bound, number_generator = (lambda: random.betavariate(1, 5))) -> list[int]:
-    res = []
-    for i in range(n):
-        res.append(random_int(bound, number_generator=number_generator))
-    return res
+    return [random_int(bound, number_generator=number_generator) for _ in range(n)]
 
 def random_int_matrix(n, bound, null_diag=True, number_generator = (lambda: random.betavariate(1, 5))) -> list[list[int]]:
-    # Suggestion allocate all the needed space, to save time on list resizing on appends
-    # res = [[0 for _ in range(n)] for _ in range(n)]
-    # for i in range(n):
-    #     for j in range(n):
-    #         res[i][j] =  random_int(bound, number_generator=number_generator)
-
-    res = []
-    for i in range(n):
-        res.append(random_int_list(n, bound, number_generator=number_generator))
-
+    res = [random_int_list(n, bound, number_generator=number_generator) for _ in range(n)]
 
     if null_diag == True:
         for i in range(n):
@@ -109,16 +98,6 @@ def random_int_matrix(n, bound, null_diag=True, number_generator = (lambda: rand
     return res
 
 def random_symetric_int_matrix(n, bound, null_diag=True,  number_generator = (lambda: random.betavariate(1, 5))) -> list[list[int]]:
-    #Suggestion, directly generate the numbers, and assign to the 2 positions at the same time
-    # res = [[0 for _ in range(n)] for _ in range(n)]
-    # c = not null_diag # when null_diag is true, we will fill all the numbers before i=j, otherwize i=j included
-    # for i in range(n):
-    #     for j in range(i+c):
-    #         v = random_int(bound, number_generator=number_generator)
-    #         res[i][j] = v
-    #         res[j][i] = v
-
-
     res = random_int_matrix(n, bound, null_diag, number_generator=number_generator)
     for i in range(n):
         for j in range(n):
@@ -134,12 +113,6 @@ def random_oriented_int_matrix(n, bound, null_diag=True, number_generator = (lam
     return res
 
 def random_triangular_int_matrix(n, bound, null_diag=True, number_generator = (lambda: random.betavariate(1, 5))) -> list[list[int]]:
-    # Suggestion: Avoid multiple matrix traversals by directly generating a triangular matrix
-    # res = [[0 for _ in range(n)] for _ in range(n)]
-    # for i in range(n):
-    #     for j in range(i+ null_diag, n):
-    #         res[i][j] = random_int(bound, number_generator=number_generator)
-
     res = random_int_matrix(n, bound, null_diag, number_generator=number_generator)
     c = int(not null_diag) #For null_diag see random_symmetric_int_matrix
     for i in range(n):

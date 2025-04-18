@@ -1,5 +1,11 @@
+from modules.graphs import graph_de_prof_td_10
 from modules.open_digraph import *
+from modules.bool_circ import *
 import inspect
+from loguru import logger
+import sys
+
+logger.add(sys.stdout, level="TRACE")
 
 print("open_digraph:")
 print(dir(open_digraph))
@@ -24,12 +30,27 @@ n9 = node(9, '& 2', {6:1, 8:1}, {})
 graph_s = open_digraph(
     [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
 )
-graph_s.add_output_node(9)
-graph_s.display("graph_s", verbose=True)
+# graph_s.add_output_node(9)
+# graph_s.display("graph_s", verbose=False)
 
-res = graph_s.longest_path(1, 9)
-print(res)
-
-# res = graph_s.sort_topologicly()
+# res = graph_s.longest_path(1, 9)
 # print(res)
 
+
+
+# rand_g = open_digraph.random(6, 1, form="DAG")
+# rand_g.display("rand_g")
+
+# circ = bool_circ.random_bool_circ_from_graph(graph_de_prof_td_10(), 1, 3)
+# circ.display("circ")
+
+circ_add_0 = build_adder(1, ['x0', 'x1'], ['x0\'', 'x1\''], 'c')
+print(circ_add_0)
+circ_add_0.display("circ_add_0")
+
+# circ, vars = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(~(x2)))", "(x1)&(x2)")
+# circ, vars = parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
+#
+# circ.display("circ", verbose=True)
+# # res = graph_s.sort_topologicly()
+# print(vars)
