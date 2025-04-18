@@ -8,6 +8,7 @@ import unittest
 from modules.open_digraph import *
 from modules.open_digraph_mixins.open_digraph_matrix_mixin import *
 from modules.node import node
+from modules.bool_circ import build_adder_0
 
 class InitTest(unittest.TestCase):
     def test_init_node(self):
@@ -1319,6 +1320,78 @@ class ParenthesesTest(unittest.TestCase):
 
         self.assertNotIn(4, graph_s.get_nodes_ids())
 
+
+class TestBoolCircAdder(unittest.TestCase):
+    def test_build_adder_0_basic_structure(self):
+        reg1 = ['a']
+        reg2 = ['b']
+        carry = 'c'
+        circ = build_adder_0(reg1, reg2, carry)
+
+        # returns the right type
+        self.assertIsInstance(circ, bool_circ)
+
+        # must be acyclic and well-formed
+        self.assertTrue(circ.is_acyclic(), "build_adder_0 yielded a cyclic graph")
+        self.assertTrue(circ.is_well_formed(), "build_adder_0 yielded a malformed circuit")
+
+        # 3 inputs (a, b, c) and 2 outputs (sum, carry‑out)
+        self.assertEqual(len(circ.get_inputs_ids()), 3)
+        self.assertEqual(len(circ.get_outputs_ids()), 2)
+
+    def test_build_half_adder_alias(self):
+        reg1 = ['x']
+        reg2 = ['y']
+        carry = '0'
+        # build_adder(0, …) and build_half_adder(0, …) should coincide
+        circ_from_adder = bool_circ.build_adder(0, reg1, reg2, carry)
+        circ_half = bool_circ.build_half_adder(0, reg1, reg2)
+
+        self.assertEqual(
+            circ_from_adder.get_inputs_ids(), 
+            circ_half.get_inputs_ids(),
+            "Half‐adder inputs differ from build_adder(0, …)"
+        )
+        self.assertEqual(
+            circ_from_adder.get_outputs_ids(),
+            circ_half.get_outputs_ids(),
+            "Half‐adder outputs differ from build_adder(0, …)"
+        )
+
+    def test_build_adder_dimensions_n1(self):
+        # for 1‐bit adder: reg1/reg2 length = 2, inputs = 2·2+1 = 5, outputs = 2+1 = 3
+        reg1 = ['u','v']
+        reg2 = ['w','x']
+        c = 'cin'
+        circ = bool_circ.build_adder(1, reg1, reg2, c)
+
+        self.assertTrue(circ.is_acyclic())
+        self.assertTrue(circ.is_well_formed())
+
+        self.assertEqual(len(circ.get_inputs_ids()), 5)
+        self.assertEqual(len(circ.get_outputs_ids()), 3)
+
+    def test_build_adder_dimensions_n2(self):
+        # for 2‐bit adder: reg1/reg2 length = 4, inputs = 2·4+1 = 9, outputs = 4+1 = 5
+        reg1 = ['a','b','c','d']
+        reg2 = ['e','f','g','h']
+        c = 'cin'
+        circ = bool_circ.build_adder(2, reg1, reg2, c)
+
+        self.assertTrue(circ.is_acyclic())
+        self.assertTrue(circ.is_well_formed())
+
+        self.assertEqual(len(circ.get_inputs_ids()), 9)
+        self.assertEqual(len(circ.get_outputs_ids()), 5)
+
+    def test_build_adder_invalid_arguments(self):
+        # negative n
+        with self.assertRaises(AssertionError):
+            bool_circ.build_adder(-1, ['a'], ['b'], 'c')
+
+        # mismatched register lengths
+        with self.assertRaises(AssertionError):
+            bool_circ.build_adder(1, ['x'], ['y','z'], 'c')
 
 
 
