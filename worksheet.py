@@ -44,7 +44,7 @@ graph_s = open_digraph(
 # circ = bool_circ.random_bool_circ_from_graph(graph_de_prof_td_10(), 1, 3)
 # circ.display("circ")
 
-circ_add_0 = build_adder(1, ['x0', 'x1'], ['x0\'', 'x1\''], 'c')
+circ_add_0 = build_adder(2, ['x0', 'x1', 'x2', 'x3'], ['x0\'', 'x1\'', 'x2\'', 'x3\''], 'c')
 print(circ_add_0)
 circ_add_0.display("circ_add_0")
 
