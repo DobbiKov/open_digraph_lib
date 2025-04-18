@@ -253,6 +253,19 @@ class bool_circ(open_digraph):
         return bool_circ(new_bool_circ) # temp return
 
     @classmethod
+    def from_number(cls: Type[TB], number: int, size: int = 8) -> 'bool_circ':
+        res = open_digraph.identity(size)
+        bin_rep = bin(number)[2:]
+        assert len(bin_rep) <= size
+
+        for idx, input_id in enumerate(reversed(res.get_inputs_ids())):
+            if idx >= len(bin_rep):
+                res[input_id].label = '0' 
+            else:
+                res[input_id].label = bin_rep[idx]
+        return bool_circ(res)
+
+    @classmethod
     def build_half_adder(cls: Type[TB], n: int, reg1: list[str], reg2: list[str]) -> 'bool_circ':
         """
         Recursively constructs a binary half adder circuit of size 2^n using two input registers and an initial carry.
