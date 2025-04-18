@@ -54,7 +54,13 @@ class OpenDigraphAddersMixin(object):
         self.nodes[tgt].add_parent_id(src)
         return True
 
-    def add_edges(self: T, edges):
+    def add_edges(self: T, edges: list[tuple[int, int]]) -> None:
+        """
+        Add edges using given list of node ids
+
+        Args:
+            edges(list((int, int))) - list of tuples where first member of the tuple is source node id, and second one is the id of the target node id
+        """
         for src, tgt in edges:
             self.add_edge(src, tgt)
     

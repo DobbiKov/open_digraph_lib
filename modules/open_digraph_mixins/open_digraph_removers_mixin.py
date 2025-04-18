@@ -34,7 +34,7 @@ class OpenDigraphRemoversMixin(object):
         self.nodes[src].remove_child_id(tgt)
         self.nodes[tgt].remove_parent_id(src)
 
-    def remove_node_by_id(self: T, id):
+    def remove_node_by_id(self: T, id: int):
         """
         Remove the node by given id and remove carefully all the edges pointing to or from the given node
 
