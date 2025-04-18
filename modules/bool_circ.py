@@ -218,30 +218,29 @@ class bool_circ(open_digraph):
         if n == 0:
             return build_adder_0(reg1, reg2, carry)
 
-        sub_num = 2**(n-1) 
-        reg_1_1 = reg1[0:sub_num]
+        sub_num = 2**(n-1) # the size of the register for Additioner (n-1)
+
+        # dividing registers on two so we can pass them to the Additioners (n-1)
         reg_1_2 = reg1[sub_num:]
+        reg_1_1 = reg1[0:sub_num] 
 
         reg_2_1 = reg2[0:sub_num]
         reg_2_2 = reg2[sub_num:]
 
+        # passing divided registers to the Additioners (n-1)
         circ1 = cls.build_adder(n-1, reg_1_1, reg_2_1, '0')
         circ2 = cls.build_adder(n-1, reg_1_2, reg_2_2, carry)
-        # for node_id in circ2.get_nodes_ids():
-        #     if circ2[node_id].label.startswith('x'):
-        #         circ2[node_id].label = circ2[node_id].label + "'"
         
+        
+        # getting lengths of the additioners (n-1) se we can rearrange inputs and outputs of the resulting additioner (boolean circuit)
         inputs_1 = circ1.get_inputs_ids()
-        inputs_2 = circ2.get_inputs_ids()
-
         old_output_num = len(circ1.get_outputs_ids())
         old_input_num = len(inputs_1)
-        n2 = old_input_num - 1
-        new_n2 = n2*2
-        new_input_num = new_n2 + 1
 
         new_bool_circ = circ1.parallel(circ2)
 
+        # removing one output (cause of 2 additioners)
+        # and passing the resulted carry of the right additioner (n-1) to the left one
         output_of_second_add_n = new_bool_circ.get_outputs_ids()[old_output_num]
         output_parent = list(new_bool_circ.get_id_node_map()[output_of_second_add_n].parents.keys())[0]
         new_bool_circ.remove_node_by_id(output_of_second_add_n)
