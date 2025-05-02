@@ -961,6 +961,27 @@ class BoolCircTests(unittest.TestCase):
         self.assertIn(2, circ.get_id_node_map()[1].get_children())
 
         self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+
+
+    def test_transform_or_zero(self):
+        n0 = node(0, '0', {}, {2:1})  
+        n1 = node(1, '1', {}, {2:1})  
+        n2 = node(2, '|', {0:1, 1:1}, {3:1})  # or 
+        n3 = node(3, '', {2:1}, {})  
+        circ = bool_circ(open_digraph([0,1], [], [n0, n1, n2, n3]), debug=True)
+
+        circ.transform_or_zero(2)
+
+        self.assertNotIn(0, circ.get_nodes_ids())
+
+        self.assertIn(2, circ.get_nodes_ids())
+
+        parents = list(circ.get_id_node_map()[2].get_parents().keys())
+        self.assertEqual(len(parents), 1)
+        self.assertEqual(parents[0], 1)
+        self.assertIn(2, circ.get_id_node_map()[1].get_children())
+
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
         
 class TestGraphOperations(unittest.TestCase):
 

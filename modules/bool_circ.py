@@ -238,7 +238,63 @@ class bool_circ(open_digraph):
             if cn and (cn.indegree() + cn.outdegree()) == 0:
                 self.remove_node_by_id(pid)
 
+    def transform_or_zero(self, or_id: int) -> None:
+        """
+        Remove any '0' inputs from OR:
+        (This is the mirror of transform_and_one.)
+        Args:
+            or_id(int) - id of the or node
+        """
+        if or_id not in self.get_nodes_ids():
+            return
+        gate = self.get_id_node_map()[or_id]
+        if gate.get_label() != "|":
+            return
 
+        
+        for p in list(gate.get_parents().keys()):
+            if self.get_id_node_map()[p].get_label() == "0":
+                self.remove_parallel_edges(p, or_id)
+                cn = self.get_id_node_map().get(p)
+                if cn and (cn.indegree() + cn.outdegree()) == 0:
+                    self.remove_node_by_id(p)
+
+    def transform_or_one(self, or_id: int) -> None:
+        """
+        Symetric to AND with const '0'
+        Args:
+            or_id(int) - id of the or node
+        """
+        if or_id not in self.get_nodes_ids():
+            return
+        gate = self.get_id_node_map()[or_id]
+        if gate.get_label() != "|":
+            return
+
+        # find a '1' parent
+        one_parents = [
+            p for p in gate.get_parents()
+            if self.get_id_node_map()[p].get_label() == "1"
+        ]
+        if not one_parents:
+            return
+        one_id = one_parents[0]
+
+        # for every other parent, detach it and give it a copy node
+        for p, _ in list(gate.get_parents().items()):
+            if p == one_id:
+                continue
+            self.remove_parallel_edges(p, or_id)
+            cp = self.add_node(label="")
+            self.add_edge(p, cp)
+
+        # OR has exactly one child in a well-formed circuit
+        child_id, _ = next(iter(gate.get_children().items()))
+        # rewire 1 → child
+        self.add_edge(one_id, child_id)
+
+        # delete the OR 
+        self.remove_node_by_id(or_id)
 
     
     
