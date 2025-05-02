@@ -11,6 +11,7 @@ from modules.open_digraph_mixins.open_digraph_removers_mixin import OpenDigraphR
 from modules.open_digraph_mixins.open_digraph_wellformedness_mixin import OpenDigraphWellformednessMixin
 from modules.open_digraph_mixins.open_digraph_cyclicity_mixin import OpenDigraphCyclicityMixin
 from modules.node import node
+from loguru import logger
 
 
 from typing import TYPE_CHECKING, Type, TypeVar, cast
@@ -99,7 +100,7 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
 
         self.remove_parallel_edges(id1, id2)
         self.remove_parallel_edges(id2, id1)
-        print(node2.get_parents())
+        (node2.get_parents())
 
         if label is not None:
             node1.set_label(label)

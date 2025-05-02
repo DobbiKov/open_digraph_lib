@@ -187,7 +187,7 @@ class bool_circ(open_digraph):
                 rand_lab = binary_operation_signs[rand_num]
                 graph[node_id].set_label(rand_lab)
             else:
-                print(node_id, "| ", par_num, chi_num, in_d, out_d)
+                logger.trace(f"{node_id} | {in_d} {out_d}")
 
         return bool_circ(graph)
         # return graph
@@ -358,6 +358,32 @@ class bool_circ(open_digraph):
         g.add_output_node(carry[-1], label="c4")
         return bool_circ(g)
 
+    @classmethod
+    def generate_4bit_encoder(cls: Type[TB], bit1: str, bit2: str, bit3: str, bit4: str) -> 'bool_circ':
+        output_1 = f"(({bit1})^({bit2})^({bit4}))"
+        output_2 = f"(({bit1})^({bit3})^({bit4}))"
+        output_3 = f"({bit1})"
+        output_4 = f"(({bit2})^({bit3})^({bit4}))"
+        output_5 = f"({bit2})"
+        output_6 = f"({bit3})"
+        output_7 = f"({bit4})"
+
+        return parse_parentheses(output_1, output_2, output_3, output_4, output_5, output_6, output_7)[0]
+
+    @classmethod
+    def generate_4bit_decoder(cls: Type[TB], bit1: str, bit2: str, bit3: str, bit4: str, bit5: str, bit6: str, bit7: str) -> 'bool_circ':
+        # f_l = first_line
+        xor_f_l_1 = f"(({bit1})^({bit3})^({bit5})^({bit7}))"
+        xor_f_l_2 = f"(({bit2})^({bit3})^({bit6})^({bit7}))"
+        xor_f_l_3 = f"(({bit4})^({bit5})^({bit6})^({bit7}))"
+
+        output_1 = f"((({xor_f_l_1})&({xor_f_l_2})&(~{xor_f_l_3}))^({bit3}))"
+        output_2 = f"((({xor_f_l_1})&(~{xor_f_l_2})&({xor_f_l_3}))^({bit5}))"
+        output_3 = f"(((~{xor_f_l_1})&({xor_f_l_2})&({xor_f_l_3}))^({bit6}))"
+        output_4 = f"((({xor_f_l_1})&({xor_f_l_2})&({xor_f_l_3}))^({bit7}))"
+
+        return parse_parentheses(output_1, output_2, output_3, output_4)[0]
+
 
 def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
     """
@@ -436,14 +462,3 @@ def parse_parentheses(*args) -> tuple[bool_circ, list[str]]:
     # return g, var_names
     return bool_circ(g), var_names
 
-
-    
-        
-        
-
-        
-
-
-
-        
-        
