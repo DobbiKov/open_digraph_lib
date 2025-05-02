@@ -48,7 +48,7 @@ class bool_circ(open_digraph):
             True - if the graph is well formed
             False - otherwise
         """
-
+   
         if not self.is_acyclic():
             return False
 
@@ -281,6 +281,75 @@ class bool_circ(open_digraph):
         """
         return cls.build_adder(n, reg1, reg2, '0')
 
+
+    @classmethod
+    def carry_lookahead_4(cls: Type[TB], reg1: list[str], reg2: list[str], c0: str) -> 'bool_circ':
+        """
+        Constructs a carry lookahead circuit for 4-bit addition.
+
+        Args:
+            reg1 (list[str]): The first binary register as a list of string labels.
+            reg2 (list[str]): The second binary register as a list of string labels.
+            c0 (str): The label for the initial carry input to the most significant bit.
+
+        Returns:
+            bool_circ: A boolean circuit representing the carry lookahead addition of `reg1` and `reg2`
+                       with an initial carry, constructed as a composed logic graph.
+        """
+
+        # I do not understand the well-formedness of the circuit checks, as 
+        assert len(reg1) == 4 and len(reg2) == 4
+
+        def create_binary_gate(a, b, gate):
+            n = g.add_node(label=gate)
+            g.add_edge(a, n)
+            g.add_edge(b, n)
+            return n
+
+        g = open_digraph.empty()
+
+        # inputs
+        r1 = [g.add_node(label='') for _ in reg1]
+        r2 = [g.add_node(label='') for _ in reg2]
+
+        for i in range(4):
+            g.add_input_node(r1[i], label=reg1[i])
+            g.add_input_node(r2[i], label=reg2[i])
+
+        # first carry
+        c0_node = g.add_node(label='')
+        g.add_input_node(c0_node, label=c0)
+        carry = [c0_node]
+
+        # generate and propagate
+        generate, propagate = [], []
+        for a, b in zip(r1, r2):
+            generate.append(create_binary_gate(a, b, '&'))
+            p = create_binary_gate(a, b, '^')
+            #Adding a copy node to pass is_well_formedness check
+            cp = g.add_node(label='')
+            g.add_edge(p, cp)
+            propagate.append(cp)
+
+        # c by recursive relation
+        for i in range(4):
+            p_and_c = create_binary_gate(propagate[i], carry[i], '&')
+            ci     = create_binary_gate(generate[i], p_and_c, '|')
+            #adding a copy node to pass is_well_formedness check
+            cp = g.add_node(label='')
+            g.add_edge(ci, cp)
+            carry.append(cp)
+
+        # sum bits pi ^ ci
+        sums = [create_binary_gate(propagate[i], carry[i], '^') for i in range(4)]
+
+        # outputs
+        for i in range(4):
+            g.add_output_node(sums[i], label=f"s{i}")
+        g.add_output_node(carry[-1], label="c4")
+        return bool_circ(g)
+
+
 def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
     """
     Builds a boolean circuit representing an additioner of two bits
@@ -358,3 +427,14 @@ def parse_parentheses(*args) -> tuple[bool_circ, list[str]]:
     # return g, var_names
     return bool_circ(g), var_names
 
+
+    
+        
+        
+
+        
+
+
+
+        
+        

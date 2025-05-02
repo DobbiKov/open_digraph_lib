@@ -57,3 +57,9 @@ from_num_c.display("from_num")
 # circ.display("circ", verbose=True)
 # # res = graph_s.sort_topologicly()
 # print(vars)
+
+
+
+ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
+
+ca.display("ca", verbose=False)
