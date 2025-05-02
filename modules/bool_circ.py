@@ -80,6 +80,55 @@ class bool_circ(open_digraph):
                 logger.trace("invalid label")
                 return False
         return True
+    
+    def constant_copy_transform(self, copy_id: int) -> None:
+        """
+        If node `copy_id` is a copy‐gate whose single parent is a constant
+        ('0' or '1'), replace:
+        const -> copy ->child
+                       ->child
+        with: const -> child
+            const -> child
+        
+        Args:
+            copy_id(int) - id of the copy node
+        """
+        # must be a copy node
+        if copy_id not in self.get_nodes_ids(): 
+            return
+        copy_node = self.get_id_node_map()[copy_id]
+        if copy_node.get_label() != "": 
+            return
+
+        #must have exactly one parent which is a constant
+        parents = list(copy_node.get_parents().items())
+        if len(parents) != 1: 
+            return
+        const_id, _ = parents[0]
+        const_node = self.get_id_node_map().get(const_id)
+        if const_node is None or const_node.get_label() not in ("0", "1"):
+            return
+
+        # constant must have only that one child
+        if const_node.outdegree() != 1:
+            return
+
+        # for each outgoing edge (copy → child), create a fresh constant
+        for child_id, multiplicity in list(copy_node.get_children().items()):
+            for _ in range(multiplicity):
+                new_c = self.add_node(label=const_node.get_label())
+                self.add_edge(new_c, child_id)
+
+        # remove the copy (and its const→copy edge)
+        self.remove_node_by_id(copy_id)
+
+        # if the original const is now isolated, remove it too
+        if const_node.indegree() == 0 and const_node.outdegree() == 0:
+            self.remove_node_by_id(const_id)
+        
+    
+    
+    
 
     @classmethod
     def random_bool_circ_from_graph(cls: Type[TB], graph: 'open_digraph', inputs: int = 1, outputs: int = 1) -> 'bool_circ':
@@ -426,6 +475,9 @@ def parse_parentheses(*args) -> tuple[bool_circ, list[str]]:
     
     # return g, var_names
     return bool_circ(g), var_names
+
+
+
 
 
     
