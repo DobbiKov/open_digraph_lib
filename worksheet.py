@@ -44,9 +44,12 @@ graph_s = open_digraph(
 # circ = bool_circ.random_bool_circ_from_graph(graph_de_prof_td_10(), 1, 3)
 # circ.display("circ")
 
-circ_add_0 = build_adder(2, ['x0', 'x1', 'x2', 'x3'], ['x0\'', 'x1\'', 'x2\'', 'x3\''], 'c')
-print(circ_add_0)
-circ_add_0.display("circ_add_0")
+# circ_add_0 = build_adder(2, ['x0', 'x1', 'x2', 'x3'], ['x0\'', 'x1\'', 'x2\'', 'x3\''], 'c')
+# print(circ_add_0)
+# circ_add_0.display("circ_add_0")
+
+from_num_c = bool_circ.from_number(11)
+from_num_c.display("from_num")
 
 # circ, vars = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(~(x2)))", "(x1)&(x2)")
 # circ, vars = parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
@@ -54,3 +57,9 @@ circ_add_0.display("circ_add_0")
 # circ.display("circ", verbose=True)
 # # res = graph_s.sort_topologicly()
 # print(vars)
+
+
+
+ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
+
+ca.display("ca", verbose=False)

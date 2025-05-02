@@ -35,7 +35,15 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
         
 
     @classmethod
-    def identity(cls: Type[T], n) -> 'open_digraph':
+    def identity(cls: Type[T], n: int) -> 'open_digraph':
+        """
+        Creates an identity graph of the given size (n) i.e n inputs pointing one by one on n outputs
+
+        Args:
+            n(int) - number of input nodes and output nodes
+        Returns:
+            open_digraph
+        """
         g = cls.empty()
         for _ in range(n):
             id = g.add_node()

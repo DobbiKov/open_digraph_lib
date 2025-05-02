@@ -48,7 +48,7 @@ class bool_circ(open_digraph):
             True - if the graph is well formed
             False - otherwise
         """
-
+   
         if not self.is_acyclic():
             return False
 
@@ -191,62 +191,188 @@ class bool_circ(open_digraph):
 
         return bool_circ(graph)
         # return graph
-    # @classmethod
-    # def build_adder(cls: Type['bool_circ'], n: int) -> 'bool_circ':
-        # circ = parse_parentheses("")
+    @classmethod
+    def build_adder(cls: Type[TB], n: int, reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
+        """
+        Recursively constructs a binary adder circuit of size 2^n using two input registers and an initial carry.
+
+        Args:
+            n (int): The exponent such that each register has 2^n bits.
+            reg1 (list[str]): The first binary register as a list of string labels.
+            reg2 (list[str]): The second binary register as a list of string labels.
+            carry (str): The label for the initial carry input to the most significant bit.
+
+        Returns:
+            bool_circ: A boolean circuit representing the binary addition of `reg1` and `reg2`
+                       with an initial carry, constructed as a composed logic graph.
+        """
+
+        # how it works note:
+        #         This function splits the registers into halves and recursively builds two smaller adders:
+        # one for the lower bits (with carry = '0') and one for the upper bits (with the given carry).
+        # It then merges them into a single circuit and connects them accordingly.
+        assert n >= 0
+        assert len(reg1) == len(reg2)
+        assert len(reg1) == (2**n)
+
+        if n == 0:
+            return build_adder_0(reg1, reg2, carry)
+
+        sub_num = 2**(n-1) # the size of the register for Additioner (n-1)
+
+        # dividing registers on two so we can pass them to the Additioners (n-1)
+        reg_1_2 = reg1[sub_num:]
+        reg_1_1 = reg1[0:sub_num] 
+
+        reg_2_1 = reg2[0:sub_num]
+        reg_2_2 = reg2[sub_num:]
+
+        # passing divided registers to the Additioners (n-1)
+        circ1 = cls.build_adder(n-1, reg_1_1, reg_2_1, '0')
+        circ2 = cls.build_adder(n-1, reg_1_2, reg_2_2, carry)
+        
+        
+        # getting lengths of the additioners (n-1) se we can rearrange inputs and outputs of the resulting additioner (boolean circuit)
+        inputs_1 = circ1.get_inputs_ids()
+        old_output_num = len(circ1.get_outputs_ids())
+        old_input_num = len(inputs_1)
+
+        new_bool_circ = circ1.parallel(circ2)
+
+        # removing one output (cause of 2 additioners)
+        # and passing the resulted carry of the right additioner (n-1) to the left one
+        output_of_second_add_n = new_bool_circ.get_outputs_ids()[old_output_num]
+        output_parent = list(new_bool_circ.get_id_node_map()[output_of_second_add_n].parents.keys())[0]
+        new_bool_circ.remove_node_by_id(output_of_second_add_n)
+
+        last_input_of_first_add_n = new_bool_circ.get_inputs_ids()[old_input_num-1]
+        input_child = list(new_bool_circ.get_id_node_map()[last_input_of_first_add_n].children.keys())[0]
+        new_bool_circ.remove_node_by_id(last_input_of_first_add_n)
+        new_bool_circ.add_edge(output_parent, input_child)
+
+        return bool_circ(new_bool_circ) # temp return
+
+    @classmethod
+    def from_number(cls: Type[TB], number: int, size: int = 8) -> 'bool_circ':
+        res = open_digraph.identity(size)
+        bin_rep = bin(number)[2:]
+        assert len(bin_rep) <= size
+
+        for idx, input_id in enumerate(reversed(res.get_inputs_ids())):
+            if idx >= len(bin_rep):
+                res[input_id].label = '0' 
+            else:
+                res[input_id].label = bin_rep[idx]
+        return bool_circ(res)
+
+    @classmethod
+    def build_half_adder(cls: Type[TB], n: int, reg1: list[str], reg2: list[str]) -> 'bool_circ':
+        """
+        Recursively constructs a binary half adder circuit of size 2^n using two input registers and an initial carry.
+
+        Args:
+            n (int): The exponent such that each register has 2^n bits.
+            reg1 (list[str]): The first binary register as a list of string labels.
+            reg2 (list[str]): The second binary register as a list of string labels.
+
+        Returns:
+            bool_circ: A boolean circuit representing the binary addition of `reg1` and `reg2`
+                       with an initial carry, constructed as a composed logic graph.
+        """
+        return cls.build_adder(n, reg1, reg2, '0')
+
+
+    @classmethod
+    def carry_lookahead_4(cls: Type[TB], reg1: list[str], reg2: list[str], c0: str) -> 'bool_circ':
+        """
+        Constructs a carry lookahead circuit for 4-bit addition.
+
+        Args:
+            reg1 (list[str]): The first binary register as a list of string labels.
+            reg2 (list[str]): The second binary register as a list of string labels.
+            c0 (str): The label for the initial carry input to the most significant bit.
+
+        Returns:
+            bool_circ: A boolean circuit representing the carry lookahead addition of `reg1` and `reg2`
+                       with an initial carry, constructed as a composed logic graph.
+        """
+
+        # I do not understand the well-formedness of the circuit checks, as 
+        assert len(reg1) == 4 and len(reg2) == 4
+
+        def create_binary_gate(a, b, gate):
+            n = g.add_node(label=gate)
+            g.add_edge(a, n)
+            g.add_edge(b, n)
+            return n
+
+        g = open_digraph.empty()
+
+        # inputs
+        r1 = [g.add_node(label='') for _ in reg1]
+        r2 = [g.add_node(label='') for _ in reg2]
+
+        for i in range(4):
+            g.add_input_node(r1[i], label=reg1[i])
+            g.add_input_node(r2[i], label=reg2[i])
+
+        # first carry
+        c0_node = g.add_node(label='')
+        g.add_input_node(c0_node, label=c0)
+        carry = [c0_node]
+
+        # generate and propagate
+        generate, propagate = [], []
+        for a, b in zip(r1, r2):
+            generate.append(create_binary_gate(a, b, '&'))
+            p = create_binary_gate(a, b, '^')
+            #Adding a copy node to pass is_well_formedness check
+            cp = g.add_node(label='')
+            g.add_edge(p, cp)
+            propagate.append(cp)
+
+        # c by recursive relation
+        for i in range(4):
+            p_and_c = create_binary_gate(propagate[i], carry[i], '&')
+            ci     = create_binary_gate(generate[i], p_and_c, '|')
+            #adding a copy node to pass is_well_formedness check
+            cp = g.add_node(label='')
+            g.add_edge(ci, cp)
+            carry.append(cp)
+
+        # sum bits pi ^ ci
+        sums = [create_binary_gate(propagate[i], carry[i], '^') for i in range(4)]
+
+        # outputs
+        for i in range(4):
+            g.add_output_node(sums[i], label=f"s{i}")
+        g.add_output_node(carry[-1], label="c4")
+        return bool_circ(g)
+
 
 def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
+    """
+    Builds a boolean circuit representing an additioner of two bits
+
+    Args:
+        reg1(list[str]) - first variable in a list
+        reg2(list[str]) - second variable in a list
+        carry(str) - carry
+
+    
+    Returns:
+        bool_circ
+    """
     assert len(reg1) ==1 
     assert len(reg2) ==1 
     reg = [reg1[0], reg2[0]]
     res, vars = parse_parentheses(f"((({reg[0]})&({reg[1]}))|((({reg[0]})^({reg[1]}))&({carry})))", f"((({reg[0]})^({reg[1]}))^({carry}))")
     return res
 
-def build_adder(n: int, reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
-    assert len(reg1) == len(reg2)
-    assert len(reg1) == (2**n)
-
-    if n == 0:
-        return build_adder_0(reg1, reg2, carry)
-
-    sub_num = 2**(n-1) 
-    reg_1_1 = reg1[0:sub_num]
-    reg_1_2 = reg1[sub_num:]
-
-    reg_2_1 = reg2[0:sub_num]
-    reg_2_2 = reg2[sub_num:]
-
-    circ1 = build_adder(n-1, reg_1_1, reg_2_1, 0)
-    circ2 = build_adder(n-1, reg_1_2, reg_2_2, carry)
-    # for node_id in circ2.get_nodes_ids():
-    #     if circ2[node_id].label.startswith('x'):
-    #         circ2[node_id].label = circ2[node_id].label + "'"
-    
-    inputs_1 = circ1.get_inputs_ids()
-    inputs_2 = circ2.get_inputs_ids()
-
-    old_output_num = len(circ1.get_outputs_ids())
-    old_input_num = len(inputs_1)
-    n2 = old_input_num - 1
-    new_n2 = n2*2
-    new_input_num = new_n2 + 1
-
-    new_bool_circ = circ1.parallel(circ2)
-
-    output_of_second_add_n = new_bool_circ.get_outputs_ids()[old_output_num]
-    output_parent = list(new_bool_circ.get_id_node_map()[output_of_second_add_n].parents.keys())[0]
-    new_bool_circ.remove_node_by_id(output_of_second_add_n)
-
-    last_input_of_first_add_n = new_bool_circ.get_inputs_ids()[old_input_num-1]
-    input_child = list(new_bool_circ.get_id_node_map()[last_input_of_first_add_n].children.keys())[0]
-    new_bool_circ.remove_node_by_id(last_input_of_first_add_n)
-    new_bool_circ.add_edge(output_parent, input_child)
-
-    return bool_circ(new_bool_circ) # temp return
 
 def parse_parentheses(*args) -> tuple[bool_circ, list[str]]:
     """
-    Parses string to a open_digraph    
+    Parses string to a boolean circuit    
 
     Args:
         args - list of string to parse to a boolean circuit
@@ -301,3 +427,14 @@ def parse_parentheses(*args) -> tuple[bool_circ, list[str]]:
     # return g, var_names
     return bool_circ(g), var_names
 
+
+    
+        
+        
+
+        
+
+
+
+        
+        
