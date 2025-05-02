@@ -891,8 +891,8 @@ class BoolCircTests(unittest.TestCase):
     def test_constant_copy_transformation(self):
         n0 = node(0, '0', {}, {1:1})
         n1 = node(1, '', {0:1}, {2:1, 3:1})
-        n2 = node(2, 'X', {1:1}, {})
-        n3 = node(3, 'Y', {1:1}, {})
+        n2 = node(2, '', {1:1}, {})
+        n3 = node(3, '', {1:1}, {})
         circ = bool_circ(open_digraph([0], [], [n0, n1, n2, n3]), debug=True)
 
         circ.constant_copy_transform(1)
@@ -901,21 +901,66 @@ class BoolCircTests(unittest.TestCase):
         self.assertEqual(len(const_ids), 2)
         children = {nid: list(circ.get_id_node_map()[nid].get_children()) for nid in const_ids}
         self.assertCountEqual(children.values(), [[2], [3]])
-        circ.assert_is_well_formed()
+        
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
     
     def test_constant_not_transformation(self):
         n0 = node(0, '1', {}, {1:1})
         n1 = node(1, '~', {0:1}, {2:1})
-        n2 = node(2, 'Z', {1:1}, {})
+        n2 = node(2, '', {1:1}, {})
         circ = bool_circ(open_digraph([0], [], [n0, n1, n2]), debug=True)
 
         circ.constant_not_transform(1)
 
-        # expect a single fresh '0' feeding Z
+       
         const_ids = [nid for nid in circ.get_nodes_ids() if circ.get_id_node_map()[nid].get_label() == '0']
         self.assertEqual(len(const_ids), 1)
         self.assertIn(2, circ.get_id_node_map()[const_ids[0]].get_children())
-        circ.assert_is_well_formed()
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+
+    def test_transform_and_zero(self):
+        n0 = node(0, '0', {}, {2:1})
+        n1 = node(1, '1', {}, {2:1})
+        n2 = node(2, '&', {0:1, 1:1}, {3:1})
+        n3 = node(3, '', {2:1}, {})
+        circ = bool_circ(open_digraph([0,1], [], [n0, n1, n2, n3]), debug=True)
+
+        circ.transform_and_zero(2)
+
+        self.assertNotIn(2, circ.get_nodes_ids())
+
+        copy_nodes = [nid for nid in circ.get_nodes_ids()
+                      if circ.get_id_node_map()[nid].get_label() == '']
+        self.assertEqual(len(copy_nodes), 2)
+        cp = copy_nodes[1]
+        self.assertIn(cp, circ.get_id_node_map()[1].get_children())
+
+        zeros = [nid for nid in circ.get_nodes_ids()
+                 if circ.get_id_node_map()[nid].get_label() == '0']
+    
+        self.assertTrue(any(3 in circ.get_id_node_map()[z].get_children()
+                            for z in zeros))
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+
+    def test_transform_and_one(self):
+        n0 = node(0, '1', {}, {2:1})  
+        n1 = node(1, '0', {}, {2:1})  
+        n2 = node(2, '&', {0:1, 1:1}, {3:1})  # AND 
+        n3 = node(3, '', {2:1}, {})  
+        circ = bool_circ(open_digraph([0,1], [], [n0, n1, n2, n3]), debug=True)
+
+        circ.transform_and_one(2)
+
+        self.assertNotIn(0, circ.get_nodes_ids())
+
+        self.assertIn(2, circ.get_nodes_ids())
+
+        parents = list(circ.get_id_node_map()[2].get_parents().keys())
+        self.assertEqual(len(parents), 1)
+        self.assertEqual(parents[0], 1)
+        self.assertIn(2, circ.get_id_node_map()[1].get_children())
+
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
         
 class TestGraphOperations(unittest.TestCase):
 

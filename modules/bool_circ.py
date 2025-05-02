@@ -112,6 +112,10 @@ class bool_circ(open_digraph):
         # constant must have only that one child
         if const_node.outdegree() != 1:
             return
+        
+        # if copy has no children, nothing to do
+        if copy_node.outdegree() == 0:
+            return
 
         # for each outgoing edge (copy → child), create a fresh constant
         for child_id, multiplicity in list(copy_node.get_children().items()):
@@ -135,32 +139,7 @@ class bool_circ(open_digraph):
         Args:
             not_id(int) - id of the not node
         """
-        # must be a copy node
-        if not_id not in self.get_nodes_ids(): 
-            return
-        not_node = self.get_id_node_map()[not_id]
-        if not_node.get_label() != "~": 
-            return
-        
-        # must have exactly one parent which is a constant
-        parents = list(not_node.get_parents().items())
-        if len(parents) != 1: 
-            return
-        const_id, _ = parents[0]
-        const_node = self.get_id_node_map().get(const_id)
-        if const_node is None or const_node.get_label() not in ("0", "1"):
-            return
-        
-        # constant must have only that one child
-        if const_node.outdegree() != 1:
-            return
-
-        inv_label = "1" if const_node.get_label() == "0" else "0"
-
-        children = list(not_node.get_children().items())
-        child, mult = children[0]
-
-        # If it's not actually a NOT-gate, bail out.
+        # if not a not
         if self.get_id_node_map()[not_id].get_label() != "~":
             return
 
@@ -181,10 +160,83 @@ class bool_circ(open_digraph):
         # Remove the NOT gate (and its incoming/outgoing wires)
         self.remove_node_by_id(not_id)
 
-        # if the original const is now isolated, delete it
+        # Optionally, if the original const is now orphaned, delete it
         cn = self.get_id_node_map().get(const_id)
         if cn and cn.indegree() + cn.outdegree() == 0:
             self.remove_node_by_id(const_id)
+
+    def transform_and_zero(self, and_id: int) -> None:
+        """
+        If node is a node_and and his parent is a const then we replace:
+            if const == 0:
+                const -> and -> x
+                ...   -> 
+                ...   -> 
+                with:
+                const -> x       ... -> ''    ... -> ''
+        Args:
+            and_id(int) - id of the and node
+        """
+        # must exist and be an AND
+        if and_id not in self.get_nodes_ids():
+            return
+        gate = self.get_id_node_map()[and_id]
+        if gate.get_label() != "&":
+            return
+
+        # find one zero‐parent (else skip)
+        zero_parents = [
+            p for p in gate.get_parents()
+            if self.get_id_node_map()[p].get_label() == "0"
+        ]
+        if not zero_parents:
+            return
+        zero_id = zero_parents[0]
+
+        # for every *other* parent, detach it and give it a copy node
+        for p, mult in list(gate.get_parents().items()):
+            if p == zero_id:
+                continue
+            self.remove_parallel_edges(p, and_id)
+            cp = self.add_node(label="")
+            self.add_edge(p, cp)
+
+        child_id, _ = next(iter(gate.get_children().items()))
+        self.add_edge(zero_id, child_id)
+
+        #delete the AND 
+        self.remove_node_by_id(and_id)
+
+
+    def transform_and_one(self, and_id: int) -> None:
+        """
+        If node is a node_and and his parent is a const then we replace:
+            if const == 1:
+                const -> and -> x
+                ...   -> 
+                ...   -> 
+                with:
+                ...   -> and -> x
+                ...   ->
+        Args:
+            and_id(int) - id of the and node
+        """
+        # must be an and
+        if and_id not in self.get_nodes_ids():
+            return
+        gate = self.get_id_node_map()[and_id]
+        if gate.get_label() != "&":
+            return
+        to_prune: list[int] = []
+        for pid, mult in list(gate.get_parents().items()):
+            if self.get_id_node_map()[pid].get_label() == "1":
+                self.remove_parallel_edges(pid, and_id)
+                to_prune.append(pid)
+        # delete isolated parent
+        for pid in to_prune:
+            cn = self.get_id_node_map().get(pid)
+            if cn and (cn.indegree() + cn.outdegree()) == 0:
+                self.remove_node_by_id(pid)
 
 
 
