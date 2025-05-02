@@ -49,7 +49,12 @@ graph_s = open_digraph(
 # circ_add_0.display("circ_add_0")
 
 from_num_c = bool_circ.from_number(11)
-from_num_c.display("from_num")
+# from_num_c.display("from_num")
+
+# encoder
+temp_test_graph = bool_circ.generate_4bit_decoder("x0", "x1", "x2", "x3", "x4", "x5", "x6")
+temp_test_graph.display("decoder", verbose=False)
+# print(temp_test_graph.get_outputs_ids()) # correct order of output nodes
 
 # circ, vars = parse_parentheses("((x0)&((x1)|(x2)))|((x1)&(~(x2)))", "(x1)&(x2)")
 # circ, vars = parse_parentheses("((x0)&(x1)&(x2))|((x1)&(~(x2)))")
@@ -59,7 +64,13 @@ from_num_c.display("from_num")
 # print(vars)
 
 
+# 
+# ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4', 'a5', 'a6', 'a7', 'a8'], ['b1','b2','b3','b4', 'b5', 'b6', 'b7', 'b8'], 'c0')
 
-ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
-
+# ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
+#
+# ca.display("ca", verbose=False)
+ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
 ca.display("ca", verbose=False)
+
+# open_digraph.identity(4).display("identity", verbose=False)
