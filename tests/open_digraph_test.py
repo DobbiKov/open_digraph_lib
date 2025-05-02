@@ -887,6 +887,35 @@ class BoolCircTests(unittest.TestCase):
             )
         circ = bool_circ(graph)
         self.assertEqual(circ.is_empty(), True)
+    
+    def test_constant_copy_transformation(self):
+        n0 = node(0, '0', {}, {1:1})
+        n1 = node(1, '', {0:1}, {2:1, 3:1})
+        n2 = node(2, 'X', {1:1}, {})
+        n3 = node(3, 'Y', {1:1}, {})
+        circ = bool_circ(open_digraph([0], [], [n0, n1, n2, n3]), debug=True)
+
+        circ.constant_copy_transform(1)
+
+        const_ids = [nid for nid in circ.get_nodes_ids() if circ.get_id_node_map()[nid].get_label() == '0']
+        self.assertEqual(len(const_ids), 2)
+        children = {nid: list(circ.get_id_node_map()[nid].get_children()) for nid in const_ids}
+        self.assertCountEqual(children.values(), [[2], [3]])
+        circ.assert_is_well_formed()
+    
+    def test_constant_not_transformation(self):
+        n0 = node(0, '1', {}, {1:1})
+        n1 = node(1, '~', {0:1}, {2:1})
+        n2 = node(2, 'Z', {1:1}, {})
+        circ = bool_circ(open_digraph([0], [], [n0, n1, n2]), debug=True)
+
+        circ.constant_not_transform(1)
+
+        # expect a single fresh '0' feeding Z
+        const_ids = [nid for nid in circ.get_nodes_ids() if circ.get_id_node_map()[nid].get_label() == '0']
+        self.assertEqual(len(const_ids), 1)
+        self.assertIn(2, circ.get_id_node_map()[const_ids[0]].get_children())
+        circ.assert_is_well_formed()
         
 class TestGraphOperations(unittest.TestCase):
 

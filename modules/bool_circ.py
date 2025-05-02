@@ -126,7 +126,68 @@ class bool_circ(open_digraph):
         if const_node.indegree() == 0 and const_node.outdegree() == 0:
             self.remove_node_by_id(const_id)
         
-    
+    def constant_not_transform(self: T, not_id: int) -> None:
+        """
+        If node is a node_not and his parent is a const then we replace:
+            const -> not -> x
+        with:
+            const' -> x
+        Args:
+            not_id(int) - id of the not node
+        """
+        # must be a copy node
+        if not_id not in self.get_nodes_ids(): 
+            return
+        not_node = self.get_id_node_map()[not_id]
+        if not_node.get_label() != "~": 
+            return
+        
+        # must have exactly one parent which is a constant
+        parents = list(not_node.get_parents().items())
+        if len(parents) != 1: 
+            return
+        const_id, _ = parents[0]
+        const_node = self.get_id_node_map().get(const_id)
+        if const_node is None or const_node.get_label() not in ("0", "1"):
+            return
+        
+        # constant must have only that one child
+        if const_node.outdegree() != 1:
+            return
+
+        inv_label = "1" if const_node.get_label() == "0" else "0"
+
+        children = list(not_node.get_children().items())
+        child, mult = children[0]
+
+        # If it's not actually a NOT-gate, bail out.
+        if self.get_id_node_map()[not_id].get_label() != "~":
+            return
+
+        # Grab the single parent (the constant) and the single child.
+        const_id = next(iter(self[not_id].get_parents().keys()))
+        child_id = next(iter(self[not_id].get_children().keys()))
+
+        const_label = self.get_id_node_map()[const_id].get_label()
+        # If it's not a constant, nothing to do.
+        if const_label not in ("0", "1"):
+            return
+
+        # Build the inverted constant
+        inverted = "1" if const_label == "0" else "0"
+        new_const = self.add_node(label=inverted)
+        self.add_edge(new_const, child_id)
+
+        # Remove the NOT gate (and its incoming/outgoing wires)
+        self.remove_node_by_id(not_id)
+
+        # if the original const is now isolated, delete it
+        cn = self.get_id_node_map().get(const_id)
+        if cn and cn.indegree() + cn.outdegree() == 0:
+            self.remove_node_by_id(const_id)
+
+
+
     
     
 
