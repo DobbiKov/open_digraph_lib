@@ -254,6 +254,15 @@ class bool_circ(open_digraph):
 
     @classmethod
     def from_number(cls: Type[TB], number: int, size: int = 8) -> 'bool_circ':
+        """
+        Returns a boolean circuit from the given number and the register size
+
+        Args:
+            number(int) - the number to code to the circuit
+            size(int) - size of the register
+        Returns:
+            bool_circ
+        """
         res = open_digraph.identity(size)
         bin_rep = bin(number)[2:]
         assert len(bin_rep) <= size
