@@ -142,9 +142,10 @@ class OpenDigraphFileDisplayMixin(object):
         file_name_pdf = f"{file_name}.pdf"
         self.save_as_dot_file(f"./{dir}/{file_name_dot}", verbose)
         os.system(f"dot -Tpdf ./{dir}/{file_name_dot} -o ./{dir}/{file_name_pdf}")
-
-        os.system(f"open ./{dir}/{file_name_pdf}")
-        # os.system(f"okular ./{dir}/{file_name_pdf}")
+        try:
+            os.system(f"open ./{dir}/{file_name_pdf}")
+        except:
+            os.system(f"okular ./{dir}/{file_name_pdf}")
 
         #if os.system(f"python3 -m webbrowser -t \"./{file_name_pdf}\"") != 0:
 
