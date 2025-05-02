@@ -53,7 +53,7 @@ class OpenDigraphComposeParallelSplitMixin(object):
         for node in newg.get_nodes():
             self.nodes[node.get_id()] = node
         for input, output in zip(self.get_inputs_ids(), newg.get_outputs_ids()):
-            self.add_edge(output, input)
+            self.fuse_nodes(output, input, newg[output].get_label())
         self.set_inputs(newg.get_inputs_ids())
     
     def compose(self: T, g):

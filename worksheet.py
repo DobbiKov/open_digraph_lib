@@ -64,7 +64,13 @@ temp_test_graph.display("decoder", verbose=False)
 # print(vars)
 
 
+# 
+# ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4', 'a5', 'a6', 'a7', 'a8'], ['b1','b2','b3','b4', 'b5', 'b6', 'b7', 'b8'], 'c0')
 
 # ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
 #
 # ca.display("ca", verbose=False)
+ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
+ca.display("ca", verbose=False)
+
+# open_digraph.identity(4).display("identity", verbose=False)

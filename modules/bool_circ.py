@@ -323,6 +323,7 @@ class bool_circ(open_digraph):
 
         for i in range(4):
             g.add_input_node(r1[i], label=reg1[i])
+        for i in range(4):
             g.add_input_node(r2[i], label=reg2[i])
 
         # first carry
@@ -357,7 +358,7 @@ class bool_circ(open_digraph):
             g.add_output_node(sums[i], label=f"s{i}")
         g.add_output_node(carry[-1], label="c4")
         return bool_circ(g)
-
+    
     @classmethod
     def generate_4bit_encoder(cls: Type[TB], bit1: str, bit2: str, bit3: str, bit4: str) -> 'bool_circ':
         output_1 = f"(({bit1})^({bit2})^({bit4}))"
@@ -384,6 +385,56 @@ class bool_circ(open_digraph):
 
         return parse_parentheses(output_1, output_2, output_3, output_4)[0]
 
+    @classmethod
+    def carry_lookahead_4n(cls: Type[TB],
+                           reg1: list[str],
+                           reg2: list[str],
+                           carry: str) -> 'bool_circ':
+        """
+        Chains 4‑bit carry‑lookahead blocks to handle any
+        multiple of 4 bits by passing each block’s carry‑out
+        into the next block’s carry‑in.
+        """
+        assert len(reg1) == len(reg2) and len(reg1) % 4 == 0
+        blocks = len(reg1) // 4
+
+        # first 4‑bit block with initial carry
+        circ = cls.carry_lookahead_4(reg1[0:4], reg2[0:4], carry)
+
+        # for each subsequent 4‑bit block
+        for i in range(1, blocks):
+            c_label = f"c{4*i}"
+            blk = cls.carry_lookahead_4(
+                reg1[4*i:4*(i+1)],
+                reg2[4*i:4*(i+1)],
+                c_label
+            )
+            merged = circ.parallel(blk)
+
+
+            #merge the carry out of the previous block with the carry in of the next block
+            # find the carry out of the previous block
+            out_id = next(
+                oid for oid in merged.get_outputs_ids()
+                if merged.get_id_node_map()[oid].get_label() == c_label
+            )
+            parent = list(merged.get_id_node_map()[out_id].parents.keys())[0]
+            merged.remove_node_by_id(out_id)
+
+            # find the carry in of the next block
+            in_id = next(
+                iid for iid in merged.get_inputs_ids()
+                if merged.get_id_node_map()[iid].get_label() == c_label
+            )
+            child = list(merged.get_id_node_map()[in_id].children.keys())[0]
+            merged.remove_node_by_id(in_id)
+
+            merged.add_edge(parent, child)
+            circ = merged
+
+        circ.display("circ", verbose=False)
+        return bool_circ(circ)
+            
 
 def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
     """
