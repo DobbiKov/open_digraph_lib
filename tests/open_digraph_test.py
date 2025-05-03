@@ -1023,7 +1023,7 @@ class BoolCircTests(unittest.TestCase):
         self.assertFalse(any(nd.get_label() == '~' for nd in circ.get_nodes()))
         parents_Z = list(circ.get_id_node_map()[3].get_parents().keys())
         self.assertEqual(parents_Z, [2])
-        circ.assert_is_well_formed()
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
 
     def test_transform_xor_one_binary(self):
         n0 = node(0, '0', {}, {2:1})
@@ -1042,7 +1042,51 @@ class BoolCircTests(unittest.TestCase):
         not_id = nots[0]
         self.assertIn(not_id, circ.get_id_node_map()[2].get_children())
         self.assertIn(3, circ.get_id_node_map()[not_id].get_children())
-        circ.assert_is_well_formed()
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+
+    def test_transform_in_zero(self):
+        # OR gate with no inputs
+        n0 = node(0, '|', {}, {2:1})
+        n2 = node(2, '', {0:1}, {})
+        circ = bool_circ(open_digraph([], [2], [n0, n2]), debug=True)
+
+        circ.transform_in_zero(0)
+        self.assertNotIn(0, circ.get_nodes_ids())
+        zero_nodes = [nid for nid in circ.get_nodes_ids() 
+                     if circ.get_id_node_map()[nid].get_label() == '0']
+        self.assertEqual(len(zero_nodes), 1)
+        zero_id = zero_nodes[0]
+        self.assertIn(2, circ.get_id_node_map()[zero_id].get_children())
+
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+
+        n3 = node(3, '^', {}, {4:1})
+        n4 = node(4, '', {3:1}, {})
+        circ2 = bool_circ(open_digraph([], [4], [n3, n4]), debug=True)
+
+        circ2.transform_in_zero(3)
+        self.assertNotIn(3, circ2.get_nodes_ids())
+        zero_nodes = [nid for nid in circ2.get_nodes_ids() 
+                     if circ2.get_id_node_map()[nid].get_label() == '0']
+        self.assertEqual(len(zero_nodes), 1)
+        zero_id = zero_nodes[0]
+        self.assertIn(4, circ2.get_id_node_map()[zero_id].get_children())
+        self.assertTrue(circ2.is_well_formed(), "The valid circuit should be well formed.")
+
+    def test_transform_in_one(self):
+        n0 = node(0, '&', {}, {2:1})
+        n2 = node(2, '', {0:1}, {})
+        circ = bool_circ(open_digraph([], [2], [n0, n2]), debug=True)
+
+        circ.transform_in_one(0)
+        self.assertNotIn(0, circ.get_nodes_ids())
+        one_nodes = [nid for nid in circ.get_nodes_ids() 
+                    if circ.get_id_node_map()[nid].get_label() == '1']
+        self.assertEqual(len(one_nodes), 1)
+        one_id = one_nodes[0]
+        self.assertIn(2, circ.get_id_node_map()[one_id].get_children())
+
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
         
 class TestGraphOperations(unittest.TestCase):
 

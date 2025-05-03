@@ -353,6 +353,57 @@ class bool_circ(open_digraph):
             self.add_edge(xor_id, not_id)
             self.add_edge(not_id, child_id)
 
+    def transform_in_zero(self, node_id: int) -> None:
+        """
+        Transform any '|' or '^' with no inputs to '0':
+        Args:
+            node_id(int) - id of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() not in ["|", "^"]:
+            return
+
+        # Check if the gate has no inputs
+        if gate.indegree() == 0:
+            # Create a '0' constant
+            zero_node = self.add_node(label="0")
+            for child_id, mult in list(gate.get_children().items()):
+                self.remove_parallel_edges(node_id, child_id)
+                # Add edges from the '0' constant to the children
+                for _ in range(mult):
+                    self.add_edge(zero_node, child_id)
+
+            # Remove the original gate
+            self.remove_node_by_id(node_id)
+
+    def transform_in_one(self: T, node_id: int) -> None:
+        """
+        Transform any '&' with no inputs to '1':
+        Args:
+            node_id(int) - id of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() != "&":
+            return
+        
+        # Check if the gate has no inputs
+        if gate.indegree() == 0:
+            # Create a '1' constant
+            one_node = self.add_node(label="1")
+            for child_id, mult in list(gate.get_children().items()):
+                self.remove_parallel_edges(node_id, child_id)
+                # Add edges from the '1' constant to the children
+                for _ in range(mult):
+                    self.add_edge(one_node, child_id)
+            # Remove the original gate
+            self.remove_node_by_id(node_id)
+
     
     
 
