@@ -335,23 +335,33 @@ class bool_circ(open_digraph):
         if gate.get_label() != "^":
             return
 
+        # Find one '1' parent
         ones = [
             p for p in gate.get_parents().keys()
             if self.get_id_node_map()[p].get_label() == "1"
         ]
-        for p in ones:
-            self.remove_parallel_edges(p, xor_id)
-            # delete '1' if now isolated
-            node_p = self.get_id_node_map().get(p)
-            if node_p and (node_p.indegree() + node_p.outdegree()) == 0:
-                self.remove_node_by_id(p)
+        if not ones:  # No '1' parents
+            return
 
+        # Process only one '1' parent at a time
+        one_id = ones[0]  # Take the first '1' parent
+
+        # Remove edge from '1' to XOR
+        self.remove_parallel_edges(one_id, xor_id)
+
+        # Delete '1' constant if now isolated
+        node_p = self.get_id_node_map().get(one_id)
+        if node_p and (node_p.indegree() + node_p.outdegree()) == 0:
+            self.remove_node_by_id(one_id)
+
+        # Get child of XOR gate
         child_id, mult = next(iter(gate.get_children().items()))
+
+        # Add a NOT gate between XOR and its child
         self.remove_parallel_edges(xor_id, child_id)
-        for _ in range(mult):
-            not_id = self.add_node(label="~")
-            self.add_edge(xor_id, not_id)
-            self.add_edge(not_id, child_id)
+        not_id = self.add_node(label="~")
+        self.add_edge(xor_id, not_id)
+        self.add_edge(not_id, child_id)
 
     def transform_in_zero(self, node_id: int) -> None:
         """
@@ -404,8 +414,58 @@ class bool_circ(open_digraph):
             # Remove the original gate
             self.remove_node_by_id(node_id)
 
-    
-    
+    def evaluate(self) -> None:
+        """
+        Apply all transformation rules to simplify a bool circuit until 
+        no more transformations are applicable.
+
+        """
+        changed = True
+        while changed:
+            changed = False
+
+            # Current nodes
+            node_ids = list(self.get_nodes_ids())
+
+            # Apply transformations to each node
+            for node_id in node_ids:
+                if node_id not in self.get_nodes_ids():  # Node might have been removed by previous transformation
+                    continue
+                
+                node = self.get_id_node_map().get(node_id)
+                if not node:
+                    continue
+
+                # Store state before transformation
+                old_nodes_count = len(self.get_nodes_ids())
+
+                # Apply transformations based on node type
+                label = node.get_label()
+
+                if label == '':  # Copy
+                    self.constant_copy_transform(node_id)
+                elif label == '~':  # NOT
+                    self.constant_not_transform(node_id)
+                elif label == '&':  # AND
+                    self.transform_and_zero(node_id)
+                    self.transform_and_one(node_id)
+                    self.transform_in_one(node_id)
+                elif label == '|':  # OR
+                    self.transform_or_zero(node_id)
+                    self.transform_or_one(node_id)
+                    self.transform_in_zero(node_id)
+                elif label == '^':  # XOR gate
+                    self.transform_xor_zero(node_id)
+                    self.transform_xor_one(node_id)
+                    self.transform_in_zero(node_id)
+
+                # Check if any transformation was applied
+                if old_nodes_count != len(self.get_nodes_ids()) or node_id not in self.get_nodes_ids():
+                    changed = True
+                    break  # Start from the beginning
+
+                
+                
 
     @classmethod
     def random_bool_circ_from_graph(cls: Type[TB], graph: 'open_digraph', inputs: int = 1, outputs: int = 1) -> 'bool_circ':

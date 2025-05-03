@@ -888,7 +888,7 @@ class BoolCircTests(unittest.TestCase):
         circ = bool_circ(graph)
         self.assertEqual(circ.is_empty(), True)
     
-    def test_constant_copy_transformation(self):
+    def test_constant_copy_transformation_zero(self):
         n0 = node(0, '0', {}, {1:1})
         n1 = node(1, '', {0:1}, {2:1, 3:1})
         n2 = node(2, '', {1:1}, {})
@@ -903,6 +903,23 @@ class BoolCircTests(unittest.TestCase):
         self.assertCountEqual(children.values(), [[2], [3]])
         
         self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+    
+    def test_constant_copy_transformation_one(self):
+        n0 = node(0, '1', {}, {1:1})
+        n1 = node(1, '', {0:1}, {2:1, 3:1})
+        n2 = node(2, '', {1:1}, {})
+        n3 = node(3, '', {1:1}, {})
+        circ = bool_circ(open_digraph([0], [], [n0, n1, n2, n3]), debug=True)
+
+        circ.constant_copy_transform(1)
+
+        const_ids = [nid for nid in circ.get_nodes_ids() if circ.get_id_node_map()[nid].get_label() == '1']
+        self.assertEqual(len(const_ids), 2)
+        children = {nid: list(circ.get_id_node_map()[nid].get_children()) for nid in const_ids}
+        self.assertCountEqual(children.values(), [[2], [3]])
+        
+        self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+
     
     def test_constant_not_transformation(self):
         n0 = node(0, '1', {}, {1:1})
@@ -1087,6 +1104,30 @@ class BoolCircTests(unittest.TestCase):
         self.assertIn(2, circ.get_id_node_map()[one_id].get_children())
 
         self.assertTrue(circ.is_well_formed(), "The valid circuit should be well formed.")
+
+    def test_evaluate_simple(self):
+        const0 = node(0, '0', {}, {3:1})
+        const1 = node(1, '1', {}, {4:1})
+        const0_2 = node(2, '0', {}, {5:1})
+
+        copy_0 = node(3, '', {0:1}, {6:1, 8:1})
+        copy_1 = node(4, '', {1:1}, {6:1, 7:1})
+        copy_0_2 = node(5, '', {2:1}, {8:1})
+
+        and_gate = node(6, '&', {3:1, 4:1}, {10:1})
+        not_gate = node(7, '~', {4:1}, {9:1})
+        or_gate = node(8, '|', {3:1, 5:1}, {11:1})
+
+        end_gate = node(9, '', {7:1}, {})
+        end_gate_2 = node(10, '', {6:1}, {})
+        end_gate_3 = node(11, '', {8:1}, {})
+        circ = bool_circ(open_digraph([0, 1, 2], [9, 10, 11],
+            [const0, const1, const0_2, copy_0, copy_1, copy_0_2,
+             and_gate, not_gate, or_gate, end_gate, end_gate_2, end_gate_3]), debug=True)
+        
+        circ.evaluate()
+        self.assertTrue(circ.is_well_formed(), "Circuit should remain well-formed after evaluation")
+        self.assertEqual(len(circ.get_nodes_ids()), 8)
         
 class TestGraphOperations(unittest.TestCase):
 
