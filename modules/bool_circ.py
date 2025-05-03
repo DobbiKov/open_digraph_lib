@@ -295,6 +295,63 @@ class bool_circ(open_digraph):
 
         # delete the OR 
         self.remove_node_by_id(or_id)
+    
+    def transform_xor_zero(self, xor_id: int) -> None:
+        """
+        Remove any '0' inputs from XOR:
+        (Same as for OR)
+        Args:
+            xor_id(int) - id of the xor node
+        """
+        if xor_id not in self.get_nodes_ids():
+            return
+        gate = self.get_id_node_map()[xor_id]
+        if gate.get_label() != "^":
+            return
+
+        for p in list(gate.get_parents().keys()):
+            if self.get_id_node_map()[p].get_label() == "0":
+                self.remove_parallel_edges(p, xor_id)
+                zp = self.get_id_node_map().get(p)
+                if zp and (zp.indegree() + zp.outdegree()) == 0:
+                    self.remove_node_by_id(p)
+
+    def transform_xor_one(self, xor_id: int) -> None:
+        """
+        Remove '1' inputs from XOR and add not:
+              '1' -> xor -> x
+              ...   ->
+              ...   ->
+        with:
+              ...   -> not -> x
+              ...   ->
+        Args:
+            xor_id(int) - id of the xor node
+    
+        """
+        if xor_id not in self.get_nodes_ids():
+            return
+        gate = self.get_id_node_map()[xor_id]
+        if gate.get_label() != "^":
+            return
+
+        ones = [
+            p for p in gate.get_parents().keys()
+            if self.get_id_node_map()[p].get_label() == "1"
+        ]
+        for p in ones:
+            self.remove_parallel_edges(p, xor_id)
+            # delete '1' if now isolated
+            node_p = self.get_id_node_map().get(p)
+            if node_p and (node_p.indegree() + node_p.outdegree()) == 0:
+                self.remove_node_by_id(p)
+
+        child_id, mult = next(iter(gate.get_children().items()))
+        self.remove_parallel_edges(xor_id, child_id)
+        for _ in range(mult):
+            not_id = self.add_node(label="~")
+            self.add_edge(xor_id, not_id)
+            self.add_edge(not_id, child_id)
 
     
     
