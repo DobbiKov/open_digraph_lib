@@ -598,6 +598,53 @@ class bool_circ(open_digraph):
                        with an initial carry, constructed as a composed logic graph.
         """
 
+        vars1 = [f'x{i}' for i in range(len(reg1))]
+        vars2 = [f'y{i}' for i in range(len(reg2))]
+
+        var_to_num = {}
+        for i in range(len(vars1)):
+            var_to_num[vars1[i]] = reg1[i]
+
+        for i in range(len(vars2)):
+            var_to_num[vars2[i]] = reg2[i]
+
+        var_to_num["c1"] = carry
+        res = cls.build_adder_inner(n, vars1, vars2, "c1")
+
+        for node_id in res.get_inputs_ids():
+            if res[node_id].label in ("0", "1"):
+                continue
+            res[node_id].label = var_to_num[ res[node_id].label ]
+
+        return res
+
+    @classmethod
+    def build_adder_inner(cls: Type[TB], n: int, reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
+        """
+        This is an inner (helper) build_adder function that implements the method. 
+
+        !!! In build_adder we create two arrays of strings with distinct names in order to simulate different variables, 
+        !!! then we pass it to this build_adder_inner where we construct the bool_circ, and then we replace input labels of the disctinct 
+        !!! generated variables with their real passed values.
+
+        Recursively constructs a binary adder circuit of size 2^n using two input registers and an initial carry.
+
+        Args:
+            n (int): The exponent such that each register has 2^n bits.
+            reg1 (list[str]): The first binary register as a list of string labels.
+            reg2 (list[str]): The second binary register as a list of string labels.
+            carry (str): The label for the initial carry input to the most significant bit.
+
+        Constraints: 
+            - n >= 0
+            - len(reg1) == len(reg2)
+            - len(reg1) == 2^n
+
+        Returns:
+            bool_circ: A boolean circuit representing the binary addition of `reg1` and `reg2`
+                       with an initial carry, constructed as a composed logic graph.
+        """
+
         # how it works note:
         #         This function splits the registers into halves and recursively builds two smaller adders:
         # one for the lower bits (with carry = '0') and one for the upper bits (with the given carry).
@@ -619,8 +666,8 @@ class bool_circ(open_digraph):
         reg_2_2 = reg2[sub_num:]
 
         # passing divided registers to the Additioners (n-1)
-        circ1 = cls.build_adder(n-1, reg_1_1, reg_2_1, '0')
-        circ2 = cls.build_adder(n-1, reg_1_2, reg_2_2, carry)
+        circ1 = cls.build_adder_inner(n-1, reg_1_1, reg_2_1, '0')
+        circ2 = cls.build_adder_inner(n-1, reg_1_2, reg_2_2, carry)
         
         
         # getting lengths of the additioners (n-1) se we can rearrange inputs and outputs of the resulting additioner (boolean circuit)
@@ -830,7 +877,6 @@ class bool_circ(open_digraph):
             merged.add_edge(parent, child)
             circ = merged
 
-        circ.display("circ", verbose=False)
         return bool_circ(circ)
             
 
