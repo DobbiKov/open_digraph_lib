@@ -419,10 +419,10 @@ class bool_circ(open_digraph):
     # ======
     def transform_associative_xor(self: T, node_id: int) -> None:
         """
-        Transform two connected xors two one xor with the parents of both
+        Transform two connected xors to one xor with the parents of both
 
         Args:
-            node_id(int) - if of the node
+            node_id(int) - id of the node
         """
         if node_id not in self.get_nodes_ids():
             return
@@ -445,6 +445,31 @@ class bool_circ(open_digraph):
             xor_parents.remove(xor_par_id)
 
             self.fuse_nodes(node_id, xor_par_id)
+
+    def transform_associative_copy(self: T, node_id: int) -> None:
+        """
+        Transform two connected copies to one copy with the parents of both
+
+        Args:
+            node_id(int) - id of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() != '':
+            return
+        parents = list(gate.get_parents().keys())
+        if len(parents) != 1: # cause copy can have ONLY ONE parent
+            return
+
+        par_node_id = parents[0]
+        par_node = self.get_id_node_map()[par_node_id]
+
+        if par_node.get_label() != '': # the parent must be copy
+            return
+
+        self.fuse_nodes(par_node_id, node_id)
     # ======
 
     def evaluate(self) -> None:

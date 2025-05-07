@@ -396,5 +396,30 @@ class BoolCircTests(unittest.TestCase):
         self.assertFalse(9 in bc.get_nodes_ids())
         self.assertEqual(len(bc.get_nodes_ids()), 8)
 
+    def test_transform_associative_copy(self):
+        n0 = node(0, 'x1',   {}, {1:1})
+        n1 = node(1, '',     {0:1}, {2:1, 5:1, 6:1})
+        n2 = node(2, '',     {1:1}, {3:1, 4:1})
+        n3 = node(3, 'out1', {2:1}, {})
+        n4 = node(4, 'out2', {2:1}, {})
+        n5 = node(5, 'out3', {1:1}, {})
+        n6 = node(6, 'out4', {1:1}, {})
+
+        graph = open_digraph([0], [3, 4, 5, 6], [n0, n1, n2, n3, n4, n5, n6])
+        bc = bool_circ(graph)
+        self.assertEqual(bc[1].get_children(), {2:1, 5:1, 6:1})
+        self.assertEqual(bc[2].get_children(), {3:1, 4:1})
+        self.assertEqual(len(bc.get_nodes_ids()), 7)
+
+        bc.transform_associative_copy(1)
+        self.assertEqual(bc[1].get_children(), {2:1, 5:1, 6:1})
+        self.assertEqual(bc[2].get_children(), {3:1, 4:1})
+        self.assertEqual(len(bc.get_nodes_ids()), 7)
+
+        bc.transform_associative_copy(2)
+        self.assertEqual(bc[1].get_children(), {5:1, 6:1, 3:1, 4:1})
+        self.assertFalse(2 in bc.get_nodes_ids())
+        self.assertEqual(len(bc.get_nodes_ids()), 6)
+
 if __name__ == "__main__":
     unittest.main()
