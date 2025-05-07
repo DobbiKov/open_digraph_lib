@@ -578,7 +578,7 @@ class bool_circ(open_digraph):
         return bool_circ(graph)
         # return graph
     @classmethod
-    def build_adder(cls: Type[TB], n: int, reg1: list[str | int], reg2: list[str | int], carry: str) -> 'bool_circ':
+    def build_adder(cls: Type[TB], n: int, reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
         """
         Recursively constructs a binary adder circuit of size 2^n using two input registers and an initial carry.
 
@@ -587,6 +587,11 @@ class bool_circ(open_digraph):
             reg1 (list[str]): The first binary register as a list of string labels.
             reg2 (list[str]): The second binary register as a list of string labels.
             carry (str): The label for the initial carry input to the most significant bit.
+
+        Constraints: 
+            - n >= 0
+            - len(reg1) == len(reg2)
+            - len(reg1) == 2^n
 
         Returns:
             bool_circ: A boolean circuit representing the binary addition of `reg1` and `reg2`
@@ -668,7 +673,7 @@ class bool_circ(open_digraph):
         return bool_circ(res)
 
     @classmethod
-    def build_half_adder(cls: Type[TB], n: int, reg1: list[str | int], reg2: list[str | int]) -> 'bool_circ':
+    def build_half_adder(cls: Type[TB], n: int, reg1: list[str], reg2: list[str]) -> 'bool_circ':
         """
         Recursively constructs a binary half adder circuit of size 2^n using two input registers and an initial carry.
 
@@ -676,6 +681,11 @@ class bool_circ(open_digraph):
             n (int): The exponent such that each register has 2^n bits.
             reg1 (list[str]): The first binary register as a list of string labels.
             reg2 (list[str]): The second binary register as a list of string labels.
+
+        Constraints: 
+            - n >= 0
+            - len(reg1) == len(reg2)
+            - len(reg1) == 2^n
 
         Returns:
             bool_circ: A boolean circuit representing the binary addition of `reg1` and `reg2`
@@ -835,7 +845,7 @@ class bool_circ(open_digraph):
         return bool_circ(circ)
             
 
-def build_adder_0(reg1: list[str | int], reg2: list[str | int], carry: str) -> 'bool_circ':
+def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
     """
     Builds a boolean circuit representing an additioner of two bits
 

@@ -65,4 +65,11 @@ ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 
 ca.display("ca", verbose=False)
 
 # === test evaluate adder
-# adder_1 = bool_circ.build_half_adder()
+num_1_bc = bool_circ.from_number(11, 8)
+num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() for idx in num_1_bc.get_inputs_ids()]
+
+num_2_bc = bool_circ.from_number(12, 8)
+num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_inputs_ids()]
+
+adder_1 = bool_circ.build_half_adder(8, num_1, num_2)
+
