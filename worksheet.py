@@ -70,7 +70,42 @@ temp_test_graph.display("decoder", verbose=False)
 # ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
 #
 # ca.display("ca", verbose=False)
-ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
-ca.display("ca", verbose=False)
+
+def create_copy_associativity_test():
+    g = open_digraph.empty()
+    
+    # Input node x
+    x = g.add_node('')
+    y = g.add_node('')
+    z = g.add_node('&')
+    w = g.add_node('~')
+    t = g.add_node('|')
+    g.add_input_node(x)
+    g.add_input_node(z)
+    g.add_edge(x, y)
+    g.add_edge(y, z)
+    g.add_edge(y, w)
+    g.add_edge(w, t)
+    g.add_edge(z, t)
+    g.add_output_node(t)
+
+
+    # g.display("g", verbose=False)
+    
+    return bool_circ(g)
+
+# Test copy associativity optimization
+copy_test = create_copy_associativity_test()
+# copy_test.display("before_optimization", verbose=False)
+copy_test.copy_associativity()
+copy_test.display("after_optimization", verbose=False)
+
+# Apply the copy associativity optimization
+# optimized = copy_test.copy()  # Create a copy to preserve the original
+# optimized.copy_associativity()
+# optimized.display("after_optimization", verbose=False)
+
+# ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
+# ca.display("ca", verbose=False)
 
 # open_digraph.identity(4).display("identity", verbose=False)
