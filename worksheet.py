@@ -30,16 +30,6 @@ n9 = node(9, '& 2', {6:1, 8:1}, {})
 graph_s = open_digraph(
     [], [], [n0, n1,n2,n3,n4,n5,n6,n7,n8,n9]
 )
-# graph_s.add_output_node(9)
-# graph_s.display("graph_s", verbose=False)
-
-# res = graph_s.longest_path(1, 9)
-# print(res)
-
-
-
-# rand_g = open_digraph.random(6, 1, form="DAG")
-# rand_g.display("rand_g")
 
 # circ = bool_circ.random_bool_circ_from_graph(graph_de_prof_td_10(), 1, 3)
 # circ.display("circ")
@@ -50,6 +40,7 @@ graph_s = open_digraph(
 
 from_num_c = bool_circ.from_number(11)
 # from_num_c.display("from_num")
+
 
 # encoder
 temp_test_graph = bool_circ.generate_4bit_decoder("x0", "x1", "x2", "x3", "x4", "x5", "x6")
@@ -64,7 +55,7 @@ temp_test_graph.display("decoder", verbose=False)
 # print(vars)
 
 
-# 
+# === test carry look ahead 
 # ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4', 'a5', 'a6', 'a7', 'a8'], ['b1','b2','b3','b4', 'b5', 'b6', 'b7', 'b8'], 'c0')
 
 # ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
@@ -73,4 +64,5 @@ temp_test_graph.display("decoder", verbose=False)
 ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
 ca.display("ca", verbose=False)
 
-# open_digraph.identity(4).display("identity", verbose=False)
+# === test evaluate adder
+# adder_1 = bool_circ.build_half_adder()

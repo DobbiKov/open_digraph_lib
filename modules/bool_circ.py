@@ -578,7 +578,7 @@ class bool_circ(open_digraph):
         return bool_circ(graph)
         # return graph
     @classmethod
-    def build_adder(cls: Type[TB], n: int, reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
+    def build_adder(cls: Type[TB], n: int, reg1: list[str | int], reg2: list[str | int], carry: str) -> 'bool_circ':
         """
         Recursively constructs a binary adder circuit of size 2^n using two input registers and an initial carry.
 
@@ -600,6 +600,13 @@ class bool_circ(open_digraph):
         assert n >= 0
         assert len(reg1) == len(reg2)
         assert len(reg1) == (2**n)
+
+        
+        for i in range(len(reg1)):
+            reg1[i] = str(reg1[i])
+
+        for i in range(len(reg2)):
+            reg2[i] = str(reg2[i])
 
         if n == 0:
             return build_adder_0(reg1, reg2, carry)
@@ -661,7 +668,7 @@ class bool_circ(open_digraph):
         return bool_circ(res)
 
     @classmethod
-    def build_half_adder(cls: Type[TB], n: int, reg1: list[str], reg2: list[str]) -> 'bool_circ':
+    def build_half_adder(cls: Type[TB], n: int, reg1: list[str | int], reg2: list[str | int]) -> 'bool_circ':
         """
         Recursively constructs a binary half adder circuit of size 2^n using two input registers and an initial carry.
 
@@ -674,6 +681,12 @@ class bool_circ(open_digraph):
             bool_circ: A boolean circuit representing the binary addition of `reg1` and `reg2`
                        with an initial carry, constructed as a composed logic graph.
         """
+        for i in range(len(reg1)):
+            reg1[i] = str(reg1[i])
+
+        for i in range(len(reg2)):
+            reg2[i] = str(reg2[i])
+
         return cls.build_adder(n, reg1, reg2, '0')
 
 
@@ -822,7 +835,7 @@ class bool_circ(open_digraph):
         return bool_circ(circ)
             
 
-def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
+def build_adder_0(reg1: list[str | int], reg2: list[str | int], carry: str) -> 'bool_circ':
     """
     Builds a boolean circuit representing an additioner of two bits
 
@@ -837,6 +850,13 @@ def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
     """
     assert len(reg1) ==1 
     assert len(reg2) ==1 
+
+    for i in range(len(reg1)):
+        reg1[i] = str(reg1[i])
+
+    for i in range(len(reg2)):
+        reg2[i] = str(reg2[i])
+
     reg = [reg1[0], reg2[0]]
     res, vars = parse_parentheses(f"((({reg[0]})&({reg[1]}))|((({reg[0]})^({reg[1]}))&({carry})))", f"((({reg[0]})^({reg[1]}))^({carry}))")
     return res
