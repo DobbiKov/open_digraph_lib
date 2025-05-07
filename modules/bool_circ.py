@@ -1,5 +1,6 @@
 import copy
 import random
+import math
 
 from loguru import logger
 from modules.open_digraph import node, open_digraph
@@ -964,3 +965,40 @@ def parse_parentheses(*args) -> tuple[bool_circ, list[str]]:
     # return g, var_names
     return bool_circ(g), var_names
 
+def add_two_numbers(num1: int, num2: int) -> int:
+    biggest = num1 if num1 > num2 else num2 # get the biggest num
+
+    power = math.ceil(math.log2(biggest)) # get it's closest power of two 
+    two_power = 2**power
+
+
+    num_1_bc = bool_circ.from_number(num1, two_power) # construct number's circuit
+    num_2_bc = bool_circ.from_number(num2, two_power)
+
+    num_1_arr = [ num_1_bc.get_id_node_map()[idx].get_label() for idx in num_1_bc.get_inputs_ids()] # get it's binary representation
+    num_2_arr = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_inputs_ids()]
+
+    bc = bool_circ.build_half_adder(power, num_1_arr, num_2_arr) # construct the circuit
+    bc.evaluate() # evaluate the circuit
+
+    bin_res = get_result_of_evaluated_additioner(bc) # get the reuslt
+    return int(bin_res, 2) # convert to int
+
+def get_result_of_evaluated_additioner(bc: 'bool_circ') -> str:
+    """
+    Gets an evaluated boolean circuit additioner and extracts the calculated result in the form of string
+
+    Args:
+        bc(bool_circ) - evaluated boolean circuit
+    Returns:
+        str - the result
+    """
+
+    output_nodes = [ n for n in bc.get_nodes_by_ids(bc.get_outputs_ids())] # get all output nodes
+    par_out_nodes = [ bc.get_id_node_map()[ list(n.get_parents().keys())[0] ] for n in output_nodes] # get their parents
+
+    labels_for_par_nodes = [n.get_label() for n in par_out_nodes] # get labels of the last ones
+    list_res = labels_for_par_nodes[1:] # remove the carry
+    res_str = "".join(list_res) # convert to string
+
+    return res_str

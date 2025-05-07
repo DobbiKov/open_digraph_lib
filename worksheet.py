@@ -64,96 +64,76 @@ ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], '
 ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
 # ca.display("ca", verbose=False)
 
-ca = bool_circ.carry_lookahead_4(['0','0','1','0'], ['0','0','1','1'], '0')
-# ca.display("ca", verbose=False)
-ca.evaluate()
-# ca.display("ca_eval", verbose=False)
-# === ()
-# g_from_par = parse_parentheses("(((0)&(0))|(0))")
-# g_from_par = parse_parentheses("(((x0)&(x1))|(x2))")
-# g_from_par[0].display("pars")
+# ca = bool_circ.carry_lookahead_4(['0','0','1','0'], ['0','0','1','1'], '0')
+# ca = bool_circ.carry_lookahead_4(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
 
-# === test evaluate adder
-num_1_bc = bool_circ.from_number(2, 4)
-num_2_bc = bool_circ.from_number(3, 4)
+reg1 = ['0','0','1','0']
+reg2 = ['0','0','1','1']
 
-# num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() + '| num1 |' + str(idx) for idx in num_1_bc.get_inputs_ids()]
-# num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() + '| num2 |' + str(idx) for idx in num_2_bc.get_inputs_ids()]
-
-num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() for idx in num_1_bc.get_inputs_ids()]
-num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_inputs_ids()]
-
-vars1 = [f'x{i}' for i in range(len(num_1))]
-vars2 = [f'y{i}' for i in range(len(num_2))]
+vars1 = [f'x{i}' for i in range(len(reg1))]
+vars2 = [f'y{i}' for i in range(len(reg2))]
 
 var_to_num = {}
 for i in range(len(vars1)):
-    var_to_num[vars1[i]] = num_1[i]
+    var_to_num[vars1[i]] = reg1[i]
 
 for i in range(len(vars2)):
-    var_to_num[vars2[i]] = num_2[i]
+    var_to_num[vars2[i]] = reg2[i]
 
-print(num_1)
-print(num_2)
+var_to_num["c1"] = '0' 
+res = bool_circ.carry_lookahead_4(vars1, vars2, "c1")
 
+res.display("ca_fake", verbose=False)
 
-adder_1 = bool_circ.build_adder(2, vars1, vars2, '0')
-for node_id in adder_1.get_inputs_ids():
-    if adder_1[node_id].label in ("0", "1"):
+for node_id in res.get_inputs_ids():
+    if res[node_id].label in ("0", "1"):
         continue
-    adder_1[node_id].label = var_to_num[ adder_1[node_id].label ]
+    res[node_id].label = var_to_num[ res[node_id].label ]
 
 
-adder_1 = bool_circ.build_adder(2, num_1, num_2, '0')
-adder_1.display('adder_1')
+res.display("ca", verbose=False)
+res.evaluate()
+res.display("ca_eval", verbose=False)
 
-adder_1.evaluate()
-adder_1.display('adder_1_evaluated')
-
-output_nodes = [ n for n in adder_1.get_nodes_by_ids(adder_1.get_outputs_ids())]
-par_out_nodes = [ adder_1.get_id_node_map()[ list(n.get_parents().keys())[0] ] for n in output_nodes]
-
-labels_for_par_nodes = [n.get_label() for n in par_out_nodes]
-
-print(labels_for_par_nodes[1:])
+print(get_result_of_evaluated_additioner(ca))
 
 # print([ n.get_label() for n in adder_1.get_nodes_by_ids(adder_1.get_outputs_ids())])
 
 
-def create_copy_associativity_test():
-    g = open_digraph.empty()
-    
-    # Input node x
-    x = g.add_node('')
-    y = g.add_node('')
-    z = g.add_node('&')
-    w = g.add_node('~')
-    t = g.add_node('|')
-    g.add_input_node(x)
-    g.add_input_node(z)
-    g.add_edge(x, y)
-    g.add_edge(y, z)
-    g.add_edge(y, w)
-    g.add_edge(w, t)
-    g.add_edge(z, t)
-    g.add_output_node(t)
-
-
-    # g.display("g", verbose=False)
-    
-    return bool_circ(g)
-
-# Test copy associativity optimization
-copy_test = create_copy_associativity_test()
-# copy_test.display("before_optimization", verbose=False)
-copy_test.copy_associativity()
-copy_test.display("after_optimization", verbose=False)
-
-# Apply the copy associativity optimization
-# optimized = copy_test.copy()  # Create a copy to preserve the original
-# optimized.copy_associativity()
-# optimized.display("after_optimization", verbose=False)
-
-# ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
-# ca.display("ca", verbose=False)
-
+# def create_copy_associativity_test():
+#     g = open_digraph.empty()
+#
+#     # Input node x
+#     x = g.add_node('')
+#     y = g.add_node('')
+#     z = g.add_node('&')
+#     w = g.add_node('~')
+#     t = g.add_node('|')
+#     g.add_input_node(x)
+#     g.add_input_node(z)
+#     g.add_edge(x, y)
+#     g.add_edge(y, z)
+#     g.add_edge(y, w)
+#     g.add_edge(w, t)
+#     g.add_edge(z, t)
+#     g.add_output_node(t)
+#
+#
+#     # g.display("g", verbose=False)
+#
+#     return bool_circ(g)
+#
+# # Test copy associativity optimization
+# copy_test = create_copy_associativity_test()
+# # copy_test.display("before_optimization", verbose=False)
+# copy_test.copy_associativity()
+# copy_test.display("after_optimization", verbose=False)
+#
+# # Apply the copy associativity optimization
+# # optimized = copy_test.copy()  # Create a copy to preserve the original
+# # optimized.copy_associativity()
+# # optimized.display("after_optimization", verbose=False)
+#
+# # ca = bool_circ.carry_lookahead_4n(['a1','a2','a3','a4'], ['b1','b2','b3','b4'], 'c0')
+# # ca.display("ca", verbose=False)
+#
