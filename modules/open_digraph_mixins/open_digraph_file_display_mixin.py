@@ -129,6 +129,26 @@ class OpenDigraphFileDisplayMixin(object):
                         f.write(f"v{node.get_id()} -> v{int(child)};\n")
             f.write("}\n")
             f.close()
+    def save_as_pdf_file(self: T, file_name="display_graph", dir="display", verbose: bool = False) -> str:
+        """
+        Save the graph as a PDF file
+
+        Args:
+            file_name(str) - file name that the file will have (default: display_graph)
+            dir(str) - folder where the files to save to (default: display)
+            verbose(bool) - default: False, if set to true, the node's id will be written near the label
+
+        Returns:
+            str - the PDF output filename
+        """
+        os.system(f"mkdir -p {dir}")
+        file_name_dot = f"{file_name}.dot"
+        file_name_pdf = f"{file_name}.pdf"
+        self.save_as_dot_file(f"./{dir}/{file_name_dot}", verbose)
+        os.system(f"dot -Tpdf ./{dir}/{file_name_dot} -o ./{dir}/{file_name_pdf}")
+
+        return file_name_pdf
+
     def display(self: T, file_name='display_graph', dir="display", verbose: bool = False):
         """
         Displays the graph in a pdf file
@@ -137,11 +157,7 @@ class OpenDigraphFileDisplayMixin(object):
             dir(str) - folder where the files to save to (default: display)
             verbose(bool) - default: False, if set to true, the node's id will be written near the label
         """
-        os.system(f"mkdir -p {dir}")
-        file_name_dot = f"{file_name}.dot"
-        file_name_pdf = f"{file_name}.pdf"
-        self.save_as_dot_file(f"./{dir}/{file_name_dot}", verbose)
-        os.system(f"dot -Tpdf ./{dir}/{file_name_dot} -o ./{dir}/{file_name_pdf}")
+        file_name_pdf = self.save_as_pdf_file(file_name, dir, verbose)
         try:
             os.system(f"open ./{dir}/{file_name_pdf}")
         except:

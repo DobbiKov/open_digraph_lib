@@ -119,8 +119,8 @@ class bool_circ(open_digraph):
 
         # for each outgoing edge (copy → child), create a fresh constant
         for child_id, multiplicity in list(copy_node.get_children().items()):
+            new_c = self.add_node(label=const_node.get_label())
             for _ in range(multiplicity):
-                new_c = self.add_node(label=const_node.get_label())
                 self.add_edge(new_c, child_id)
 
         # remove the copy (and its const→copy edge)
@@ -606,13 +606,6 @@ class bool_circ(open_digraph):
         assert len(reg1) == len(reg2)
         assert len(reg1) == (2**n)
 
-        
-        for i in range(len(reg1)):
-            reg1[i] = str(reg1[i])
-
-        for i in range(len(reg2)):
-            reg2[i] = str(reg2[i])
-
         if n == 0:
             return build_adder_0(reg1, reg2, carry)
 
@@ -663,13 +656,14 @@ class bool_circ(open_digraph):
         """
         res = open_digraph.identity(size)
         bin_rep = bin(number)[2:]
+        rev_bin_rep = list(reversed(list(bin_rep)))
         assert len(bin_rep) <= size
 
         for idx, input_id in enumerate(reversed(res.get_inputs_ids())):
             if idx >= len(bin_rep):
                 res[input_id].label = '0' 
             else:
-                res[input_id].label = bin_rep[idx]
+                res[input_id].label = rev_bin_rep[idx]
         return bool_circ(res)
 
     @classmethod
@@ -691,11 +685,6 @@ class bool_circ(open_digraph):
             bool_circ: A boolean circuit representing the binary addition of `reg1` and `reg2`
                        with an initial carry, constructed as a composed logic graph.
         """
-        for i in range(len(reg1)):
-            reg1[i] = str(reg1[i])
-
-        for i in range(len(reg2)):
-            reg2[i] = str(reg2[i])
 
         return cls.build_adder(n, reg1, reg2, '0')
 
