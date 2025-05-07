@@ -415,6 +415,38 @@ class bool_circ(open_digraph):
             # Remove the original gate
             self.remove_node_by_id(node_id)
 
+    # encoder new rules
+    # ======
+    def transform_associative_xor(self: T, node_id: int) -> None:
+        """
+        Transform two connected xors two one xor with the parents of both
+
+        Args:
+            node_id(int) - if of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() != '^':
+            return
+        parents = list(gate.get_parents().keys())
+        if len(parents) == 0:
+            return
+
+        def is_node_id_corresponds_to_xor_gate(nid: int) -> bool:
+            if nid not in self.get_nodes_ids():
+                return False
+            return self.get_id_node_map()[nid].get_label() == '^'
+
+        xor_parents = [par_id for par_id in parents if is_node_id_corresponds_to_xor_gate(par_id)]
+        while len(xor_parents) != 0:
+            xor_par_id = xor_parents[0]
+            xor_parents.remove(xor_par_id)
+
+            self.fuse_nodes(node_id, xor_par_id)
+    # ======
+
     def evaluate(self) -> None:
         """
         Apply all transformation rules to simplify a bool circuit until 

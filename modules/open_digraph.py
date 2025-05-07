@@ -83,7 +83,8 @@ class open_digraph(OpenDigraphCyclicityMixin, OpenDigraphAddersMixin, OpenDigrap
     
     def fuse_nodes(self, id1: int, id2: int, label: str | None = None) -> None:
         """
-        Fuses two nodes from two given ids. Default: label from the first id.
+        Fuses two nodes from two given ids. Default: label from the first id. 
+        The base node to be saved is the first one (not the second one)
 
         Args:
             id1(int) - an id of the first node

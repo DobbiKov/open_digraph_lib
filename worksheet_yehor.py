@@ -13,21 +13,39 @@ logger.add(sys.stdout, level="TRACE")
 # g_from_par[0].display("pars")
 
 # === test evaluate adder
-num_1_bc = bool_circ.from_number(2, 4)
-num_2_bc = bool_circ.from_number(3, 4)
+# num_1_bc = bool_circ.from_number(2, 4)
+# num_2_bc = bool_circ.from_number(3, 4)
+#
+# # num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() + '| num1 |' + str(idx) for idx in num_1_bc.get_inputs_ids()]
+# # num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() + '| num2 |' + str(idx) for idx in num_2_bc.get_inputs_ids()]
+#
+# num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() for idx in num_1_bc.get_inputs_ids()]
+# num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_inputs_ids()]
+#
+# adder_1 = bool_circ.build_adder(2, num_1, num_2, '0')
+# # adder_1.display('adder_1')
+#
+# adder_1.evaluate()
+# # adder_1.display('adder_1_evaluated')
+#
+# # print(get_result_of_evaluated_additioner(adder_1))
+#
+# print(add_two_numbers(14, 27))
 
-# num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() + '| num1 |' + str(idx) for idx in num_1_bc.get_inputs_ids()]
-# num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() + '| num2 |' + str(idx) for idx in num_2_bc.get_inputs_ids()]
+# === transformation operations
 
-num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() for idx in num_1_bc.get_inputs_ids()]
-num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_inputs_ids()]
+n0 = node(0, 'x1', {}, {4: 1})
+n1 = node(1, 'x2', {}, {4: 1})
+n2 = node(2, 'x3', {}, {5: 1})
+n3 = node(3, 'x4', {}, {5: 1})
+n4 = node(4, '^', {0: 1, 1: 1}, {5: 1})
+n5 = node(5, '^', {2: 1, 3: 1, 4: 1}, {6: 1})
+n6 = node(6, 'out', {5: 1}, {})
 
-adder_1 = bool_circ.build_adder(2, num_1, num_2, '0')
-# adder_1.display('adder_1')
+graph = open_digraph([0, 1, 2, 3], [6], [n0, n1, n2, n3, n4, n5, n6])
+bc = bool_circ(graph)
+bc.display("temp")
+bc.transform_associative_xor(5)
+bc.display("temp_transformated")
 
-adder_1.evaluate()
-# adder_1.display('adder_1_evaluated')
-
-# print(get_result_of_evaluated_additioner(adder_1))
-
-print(add_two_numbers(14, 27))
+# transform_associative_xor

@@ -335,6 +335,66 @@ class BoolCircTests(unittest.TestCase):
         circ.evaluate()
         self.assertTrue(circ.is_well_formed(), "Circuit should remain well-formed after evaluation")
         self.assertEqual(len(circ.get_nodes_ids()), 8)
+    def test_transform_associative_xor(self):
+        n0 = node(0, 'x1', {}, {4: 1})
+        n1 = node(1, 'x2', {}, {4: 1})
+        n2 = node(2, 'x3', {}, {5: 1})
+        n3 = node(3, 'x4', {}, {5: 1})
+        n4 = node(4, '^', {0: 1, 1: 1}, {5: 1})
+        n5 = node(5, '^', {2: 1, 3: 1, 4: 1}, {6: 1})
+        n6 = node(6, 'out', {5: 1}, {})
+
+        graph = open_digraph([0, 1, 2, 3], [6], [n0, n1, n2, n3, n4, n5, n6])
+        bc = bool_circ(graph)
+        self.assertEqual(bc[5].get_parents(), {2: 1, 3: 1, 4: 1})
+        self.assertEqual(bc[4].get_parents(), {0: 1, 1: 1})
+        self.assertEqual(len(bc.get_nodes_ids()), 7)
+
+        bc.transform_associative_xor(4)
+        self.assertEqual(bc[5].get_parents(), {2: 1, 3: 1, 4: 1})
+        self.assertEqual(bc[4].get_parents(), {0: 1, 1: 1})
+        self.assertEqual(len(bc.get_nodes_ids()), 7)
+
+        bc.transform_associative_xor(5)
+        self.assertEqual(bc[5].get_parents(), {2: 1, 3: 1, 0: 1, 1: 1})
+        self.assertFalse(4 in bc.get_nodes_ids())
+        self.assertEqual(len(bc.get_nodes_ids()), 6)
+
+    def test_transform_associative_xor_2(self):
+        n0 = node(0, 'x1', {}, {4: 1})
+        n1 = node(1, 'x2', {}, {4: 1})
+        n2 = node(2, 'x3', {}, {5: 1})
+        n3 = node(3, 'x4', {}, {5: 1})
+        n4 = node(4, '^', {0: 1, 1: 1}, {5: 1})
+        n5 = node(5, '^', {2: 1, 3: 1, 4: 1, 9: 1}, {6: 1})
+        n6 = node(6, 'out', {5: 1}, {})
+
+        n7 = node(7, 'x5', {}, {9: 1})
+        n8 = node(8, 'x6', {}, {9: 1})
+        n9 = node(9, '^', {7: 1, 8: 1}, {5: 1})
+
+        graph = open_digraph([0, 1, 2, 3, 7, 8], [6], [n0, n1, n2, n3, n4, n5, n6, n7, n8, n9])
+        bc = bool_circ(graph)
+        self.assertEqual(bc[5].get_parents(), {2: 1, 3: 1, 4: 1, 9: 1})
+        self.assertEqual(bc[4].get_parents(), {0: 1, 1: 1})
+        self.assertEqual(bc[9].get_parents(), {7: 1, 8: 1})
+        self.assertEqual(len(bc.get_nodes_ids()), 10)
+
+        bc.transform_associative_xor(4)
+        self.assertEqual(bc[5].get_parents(), {2: 1, 3: 1, 4: 1, 9: 1})
+        self.assertEqual(bc[4].get_parents(), {0: 1, 1: 1})
+        self.assertEqual(len(bc.get_nodes_ids()), 10)
+
+        bc.transform_associative_xor(9)
+        self.assertEqual(bc[5].get_parents(), {2: 1, 3: 1, 4: 1, 9: 1})
+        self.assertEqual(bc[9].get_parents(), {7: 1, 8: 1})
+        self.assertEqual(len(bc.get_nodes_ids()), 10)
+
+        bc.transform_associative_xor(5)
+        self.assertEqual(bc[5].get_parents(), {2: 1, 3: 1, 0: 1, 1: 1, 7: 1, 8: 1})
+        self.assertFalse(4 in bc.get_nodes_ids())
+        self.assertFalse(9 in bc.get_nodes_ids())
+        self.assertEqual(len(bc.get_nodes_ids()), 8)
 
 if __name__ == "__main__":
     unittest.main()
