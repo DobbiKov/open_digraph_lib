@@ -504,6 +504,87 @@ class bool_circ(open_digraph):
             if num_of_edges_to_leave == 1:
                 self.add_edge(copy_par_id, node_id)
 
+    def transform_erase_operator(self: T, node_id: int) -> None:
+        """
+        If the given copy node has outdegree 0 (i.e doesn't have children) but has the in degree at least 1
+        (especially if it's an operator) than it'll remove the operator and connect all it's parents to the created dead-end copy nodes.
+
+        Args:
+            node_id(int) - id of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() != '':
+            return
+
+        parents = list(gate.get_parents().keys())
+        if len(parents) != 1:
+            return
+
+        if len(list(gate.get_children().keys())) != 0:
+            return
+
+        parent_id = parents[0]
+        parent_node = self[parent_id]
+
+        match parent_node.get_label():
+            case '':
+                return
+            case '0' | '1':
+                if len(list(parent_node.get_children().keys())) > 1: # if the constant has many children, then our copy doesn't have any sense, remove it
+                    self.remove_node_by_id(node_id)
+            case _:
+                parents_id_of_par_node = list(parent_node.get_parents().keys())
+                for par_id in parents_id_of_par_node:
+                    new_copy_node_id = self.add_node('')
+                    for _ in range(parent_node.get_parents()[par_id]):
+                        self.add_edge(par_id, new_copy_node_id)
+                self.remove_node_by_id(parent_id)
+                self.remove_node_by_id(node_id)
+
+    def transform_xor_if_has_parent_not(self: T, node_id: int) -> None:
+        """
+        If encounters `not` gate in the parents of the given `xor` gate, then it removes the `not`
+        gate from parents and adds as a child 
+
+        Args:
+            node_id(int) - id of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() != '^':
+            return
+        parents = list(gate.get_parents().keys())
+        if len(parents) == 0:
+            return
+
+        def is_node_id_corresponds_to_not_gate(nid: int) -> bool:
+            if nid not in self.get_nodes_ids():
+                return False
+            return self.get_id_node_map()[nid].get_label() == '~'
+
+        not_parents = [par_id for par_id in parents if is_node_id_corresponds_to_not_gate(par_id)]
+        while len(not_parents) != 0:
+            not_par_id = not_parents[0]
+            not_parents.remove(not_par_id)
+            
+            par_of_not_id = next(iter(self[not_par_id].get_parents().keys()))
+
+            self.add_edge(par_of_not_id, node_id)
+
+            self.remove_node_by_id(not_par_id)
+
+            
+            child_id = next(iter(gate.get_children().keys()))
+            self.remove_parallel_edges(node_id, child_id)
+
+            new_not_id = self.add_node('~')
+            self.add_edge(node_id, new_not_id)
+            self.add_edge(new_not_id, child_id)
     # ======
 
     def evaluate(self) -> None:

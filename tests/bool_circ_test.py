@@ -540,5 +540,64 @@ class BoolCircTests(unittest.TestCase):
         self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:1})
         self.assertEqual(bc[4].get_children(), {3:1, 6:1, 7:1})
 
+    def test_transform_erase_operator(self):
+        n0 = node(0, 'x1', {}, {3: 1})
+        n1 = node(1, 'x2', {}, {3: 1})
+        n2 = node(2, 'x3', {}, {3: 1})
+        n3 = node(3, '^', {0:1, 1:1, 2:1}, {4:1})
+        n4 = node(4, '', {3:1}, {})
+
+        graph = open_digraph([0, 1, 2], [], [n0, n1, n2, n3, n4])
+        bc = bool_circ(graph)
+
+        self.assertTrue(4 in bc.get_nodes_ids())
+        self.assertTrue(3 in bc.get_nodes_ids())
+
+        self.assertTrue(3 in list(bc[0].get_children().keys()))
+        self.assertTrue(3 in list(bc[1].get_children().keys()))
+        self.assertTrue(3 in list(bc[2].get_children().keys()))
+
+        bc.transform_erase_operator(4)
+
+        self.assertFalse(4 in bc.get_nodes_ids())
+        self.assertFalse(3 in bc.get_nodes_ids())
+
+        self.assertFalse(3 in list(bc[0].get_children().keys()))
+        self.assertFalse(3 in list(bc[1].get_children().keys()))
+        self.assertFalse(3 in list(bc[2].get_children().keys()))
+    
+    def test_transform_xor_with_not_parents(self):
+        n0 = node(0, 'x1', {}, {3: 1})
+        n1 = node(1, 'x2', {}, {6: 1})
+        n2 = node(2, 'x3', {}, {4: 1})
+        n3 = node(3, '^', {0:1, 4:1, 6:1}, {5:1})
+        n4 = node(4, '~', {2:1}, {3:1})
+        n5 = node(5, 'out', {3:1}, {})
+        n6 = node(6, '~', {1:1}, {3:1})
+
+        graph = open_digraph([0, 1, 2], [5], [n0, n1, n2, n3, n4, n5, n6])
+        bc = bool_circ(graph)
+
+        self.assertTrue(bc[3].get_parents(), {0:1, 4:1, 6:1})
+        self.assertEqual(bc[4].get_parents(), {2:1})
+        self.assertEqual(bc[6].get_parents(), {1:1})
+        curr_child = next(iter(bc[3].get_children().keys()))
+        self.assertEqual( bc[curr_child].get_label(), 'out' )
+        self.assertNotEqual( bc[curr_child].get_label(), '~' )
+
+        bc.transform_xor_if_has_parent_not(3)
+
+        self.assertNotEqual(bc[4].get_parents(), {2:1})
+        self.assertNotEqual(bc[6].get_parents(), {1:1})
+        self.assertTrue(bc[3].get_parents(), {0:1, 1:1, 2:1})
+
+        curr_child = next(iter(bc[3].get_children().keys()))
+        self.assertNotEqual( bc[curr_child].get_label(), 'out' )
+        self.assertEqual( bc[curr_child].get_label(), '~' )
+        curr_child = next(iter(bc[curr_child].get_children().keys()))
+        self.assertEqual( bc[curr_child].get_label(), '~' )
+        curr_child = next(iter(bc[curr_child].get_children().keys()))
+        self.assertEqual( bc[curr_child].get_label(), 'out' )
+
 if __name__ == "__main__":
     unittest.main()
