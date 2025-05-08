@@ -991,73 +991,103 @@ class bool_circ(open_digraph):
 
         return cls.build_adder(n, reg1, reg2, '0')
 
-
     @classmethod
     def carry_lookahead_4(cls: Type[TB], reg1: list[str], reg2: list[str], c0: str) -> 'bool_circ':
         """
-        Constructs a carry lookahead circuit for 4-bit addition.
+        Constructs a 4-bit adder using ripple-carry logic.
+        Uses dedicated input port nodes and ensures output port nodes have empty labels.
 
         Args:
-            reg1 (list[str]): The first binary register as a list of string labels.
-            reg2 (list[str]): The second binary register as a list of string labels.
-            c0 (str): The label for the initial carry input to the most significant bit.
+            reg1 (list[str]): The first binary register (4 bits, MSB first e.g., [A3, A2, A1, A0]).
+            reg2 (list[str]): The second binary register (4 bits, MSB first e.g., [B3, B2, B1, B0]).
+            c0 (str): The label for the initial carry input (for the LSB stage).
 
         Returns:
-            bool_circ: A boolean circuit representing the carry lookahead addition of `reg1` and `reg2`
-                       with an initial carry, constructed as a composed logic graph.
+            bool_circ: A boolean circuit representing the 4-bit addition.
         """
-
-        # I do not understand the well-formedness of the circuit checks, as 
-        assert len(reg1) == 4 and len(reg2) == 4
-
-        def create_binary_gate(a, b, gate):
-            n = g.add_node(label=gate)
-            g.add_edge(a, n)
-            g.add_edge(b, n)
-            return n
+        assert len(reg1) == 4 and len(reg2) == 4, "Registers must be 4 bits long."
 
         g = open_digraph.empty()
 
-        # inputs
-        r1 = [g.add_node(label='') for _ in reg1]
-        r2 = [g.add_node(label='') for _ in reg2]
+        # Helper to create a binary gate and connect inputs
+        def create_binary_gate_with_connections(id_a, id_b, gate_label):
+            gate_node_id = g.add_node(label=gate_label)
+            g.add_edge(id_a, gate_node_id)
+            g.add_edge(id_b, gate_node_id)
+            return gate_node_id
 
-        for i in range(4):
-            g.add_input_node(r1[i], label=reg1[i])
-        for i in range(4):
-            g.add_input_node(r2[i], label=reg2[i])
+        
+        a_val_nodes_msb_first = []
+        for i in range(4): 
+            bit_label = reg1[i]
+            val_node_id = g.add_node(label='')
+            g.add_input_node(val_node_id, label=bit_label) 
+            a_val_nodes_msb_first.append(val_node_id)
 
-        # first carry
-        c0_node = g.add_node(label='')
-        g.add_input_node(c0_node, label=c0)
-        carry = [c0_node]
+        b_val_nodes_msb_first = []
+        for i in range(4): 
+            bit_label = reg2[i]
+            val_node_id = g.add_node(label='')
+            g.add_input_node(val_node_id, label=bit_label)
+            b_val_nodes_msb_first.append(val_node_id)
 
-        # generate and propagate
-        generate, propagate = [], []
-        for a, b in zip(r1, r2):
-            generate.append(create_binary_gate(a, b, '&'))
-            p = create_binary_gate(a, b, '^')
-            #Adding a copy node to pass is_well_formedness check
-            cp = g.add_node(label='')
-            g.add_edge(p, cp)
-            propagate.append(cp)
+        c0_val_node_id = g.add_node(label='')
+        g.add_input_node(c0_val_node_id, label=c0)
 
-        # c by recursive relation
-        for i in range(4):
-            p_and_c = create_binary_gate(propagate[i], carry[i], '&')
-            ci     = create_binary_gate(generate[i], p_and_c, '|')
-            #adding a copy node to pass is_well_formedness check
-            cp = g.add_node(label='')
-            g.add_edge(ci, cp)
-            carry.append(cp)
 
-        # sum bits pi ^ ci
-        sums = [create_binary_gate(propagate[i], carry[i], '^') for i in range(4)]
+        a_val_nodes_lsb_first = a_val_nodes_msb_first[::-1] 
+        b_val_nodes_lsb_first = b_val_nodes_msb_first[::-1] 
 
-        # outputs
-        for i in range(4):
-            g.add_output_node(sums[i], label=f"s{i}")
-        g.add_output_node(carry[-1], label="c4")
+        propagate_copy_nodes_lsb_first = [] 
+        generate_gate_nodes_lsb_first = []   
+
+        for i in range(4): 
+            a_i_val_node = a_val_nodes_lsb_first[i]
+            b_i_val_node = b_val_nodes_lsb_first[i]
+            
+            generate_gate_nodes_lsb_first.append(
+                create_binary_gate_with_connections(a_i_val_node, b_i_val_node, '&')
+            )
+            
+            p_i_xor_gate_node = create_binary_gate_with_connections(a_i_val_node, b_i_val_node, '^')
+            
+            copy_p_i_node = g.add_node(label='') 
+            g.add_edge(p_i_xor_gate_node, copy_p_i_node)
+            propagate_copy_nodes_lsb_first.append(copy_p_i_node)
+
+        
+        current_carry_val_node = c0_val_node_id 
+        
+        carry_logic_nodes_for_sum_and_next_stage = [current_carry_val_node]
+
+
+        for i in range(4): 
+            p_i_copy_node = propagate_copy_nodes_lsb_first[i] 
+            g_i_gate_node = generate_gate_nodes_lsb_first[i]  
+            c_in_i_logic_node = carry_logic_nodes_for_sum_and_next_stage[i] 
+
+            p_and_c_gate_node = create_binary_gate_with_connections(p_i_copy_node, c_in_i_logic_node, '&')
+            c_out_i_or_gate_node = create_binary_gate_with_connections(g_i_gate_node, p_and_c_gate_node, '|')
+            
+            copy_c_out_i_node = g.add_node(label='')
+            g.add_edge(c_out_i_or_gate_node, copy_c_out_i_node)
+            carry_logic_nodes_for_sum_and_next_stage.append(copy_c_out_i_node) 
+
+        sum_gate_nodes_lsb_first = []
+        for i in range(4): 
+            p_i_copy_node = propagate_copy_nodes_lsb_first[i]
+            c_in_i_logic_node = carry_logic_nodes_for_sum_and_next_stage[i] 
+            
+            sum_gate_node = create_binary_gate_with_connections(p_i_copy_node, c_in_i_logic_node, '^')
+            sum_gate_nodes_lsb_first.append(sum_gate_node) # Stores [S0_gate, S1_gate, S2_gate, S3_gate]
+        
+        final_carry_out_logic_node = carry_logic_nodes_for_sum_and_next_stage[4]
+        g.add_output_node(final_carry_out_logic_node, label="") 
+
+        sum_gate_nodes_msb_first = sum_gate_nodes_lsb_first[::-1]
+        for i in range(4): 
+            g.add_output_node(sum_gate_nodes_msb_first[i], label="") 
+            
         return bool_circ(g)
     
     @classmethod
