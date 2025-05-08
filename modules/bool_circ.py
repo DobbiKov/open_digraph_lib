@@ -455,6 +455,8 @@ class bool_circ(open_digraph):
         """
         if node_id not in self.get_nodes_ids():
             return
+        if node_id in self.get_outputs_ids():
+            return
 
         gate = self.get_id_node_map()[node_id]
         if gate.get_label() != '':
@@ -473,7 +475,7 @@ class bool_circ(open_digraph):
 
     def transform_involution_xor(self: T, node_id: int) -> None:
         """
-        Deconnect xor with a copy parent with the multiplicity of two
+        If the given `xor` node has a copy parent than it leaves only one edge if the multiplicity is odd, or remove all the edges between those nodes if the multiplicity is even
 
         Args:
             node_id(int) - id of the node
@@ -513,6 +515,8 @@ class bool_circ(open_digraph):
             node_id(int) - id of the node
         """
         if node_id not in self.get_nodes_ids():
+            return
+        if node_id in self.get_outputs_ids():
             return
 
         gate = self.get_id_node_map()[node_id]
@@ -686,8 +690,12 @@ class bool_circ(open_digraph):
 
                 if label == '':  # Copy
                     self.constant_copy_transform(node_id)
+                    self.transform_copy_if_has_parent_not(node_id)
+                    self.transform_associative_copy(node_id)
+                    self.transform_erase_operator(node_id)
                 elif label == '~':  # NOT
                     self.constant_not_transform(node_id)
+                    self.transform_not_involution(node_id)
                 elif label == '&':  # AND
                     self.transform_and_zero(node_id)
                     self.transform_and_one(node_id)
@@ -700,6 +708,9 @@ class bool_circ(open_digraph):
                     self.transform_xor_zero(node_id)
                     self.transform_xor_one(node_id)
                     self.transform_in_zero(node_id)
+                    self.transform_associative_xor(node_id)
+                    self.transform_involution_xor(node_id)
+                    self.transform_xor_if_has_parent_not(node_id)
 
                 # Check if any transformation was applied
                 if old_nodes_count != len(self.get_nodes_ids()) or node_id not in self.get_nodes_ids():
