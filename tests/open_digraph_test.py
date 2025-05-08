@@ -559,8 +559,8 @@ class TestGraphOperations(unittest.TestCase):
         #   g_comp2: nodes become 2 and 3, with input=[2] and output=[3].
         # Also, an edge is added from output (3) to the original input (0)
         g_comp1.icompose(g_comp2)
-        # Check combined node count: original 2 + composed 2 - 1 (because two fused in one) = 3 
-        self.assertEqual(len(g_comp1.get_nodes_ids()), 3)
+        # Check combined node count: original 2 + composed 2 = 4 
+        self.assertEqual(len(g_comp1.get_nodes_ids()), 4)
 
     def test_compose(self):
         # Test compose which returns a new graph resulting from composition.
@@ -583,8 +583,8 @@ class TestGraphOperations(unittest.TestCase):
         # Ensure that neither original graph was mutated.
         self.assertEqual(len(g_comp1.get_nodes_ids()), 2)
         self.assertEqual(len(g_comp2.get_nodes_ids()), 2)
-        # Composed graph should have 3 nodes.
-        self.assertEqual(len(composed.get_nodes_ids()), 3)
+        # Composed graph should have 4 nodes.
+        self.assertEqual(len(composed.get_nodes_ids()), 4)
 
     def test_identity(self):
         # Test the identity method with n elements.

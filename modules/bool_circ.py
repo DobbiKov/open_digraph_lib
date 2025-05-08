@@ -539,6 +539,9 @@ class bool_circ(open_digraph):
             case '0' | '1':
                 if len(list(parent_node.get_children().keys())) > 1: # if the constant has many children, then our copy doesn't have any sense, remove it
                     self.remove_node_by_id(node_id)
+                elif len(list(parent_node.get_children().keys())) == 1: # our node is the only child of the constant
+                    self.remove_node_by_id(node_id)
+                    self.remove_node_by_id(parent_id)
             case _:
                 parents_id_of_par_node = list(parent_node.get_parents().keys())
                 for par_id in parents_id_of_par_node:
@@ -1059,6 +1062,20 @@ class bool_circ(open_digraph):
     
     @classmethod
     def generate_4bit_encoder(cls: Type[TB], bit1: str, bit2: str, bit3: str, bit4: str) -> 'bool_circ':
+        """
+        Generates 4bit encoder boolean circuit
+
+        Args:
+            bit1(str) - first bit
+            bit2(str) - second bit
+            bit3(str) - third bit
+            bit4(str) - fourth bit
+        Returns:
+            boolean circuit with 7 outputs
+        """
+        old_bit1, old_bit2, old_bit3, old_bit4 = bit1, bit2, bit3, bit4
+        bit1, bit2, bit3, bit4 = "x1", "x2", "x3", "x4",
+        rename_dict = {bit1:old_bit1, bit2:old_bit2, bit3:old_bit3, bit4:old_bit4}
         output_1 = f"(({bit1})^({bit2})^({bit4}))"
         output_2 = f"(({bit1})^({bit3})^({bit4}))"
         output_3 = f"({bit1})"
@@ -1067,10 +1084,30 @@ class bool_circ(open_digraph):
         output_6 = f"({bit3})"
         output_7 = f"({bit4})"
 
-        return parse_parentheses(output_1, output_2, output_3, output_4, output_5, output_6, output_7)[0]
+        res_g = parse_parentheses(output_1, output_2, output_3, output_4, output_5, output_6, output_7)[0]
+        for input_id in res_g.get_inputs_ids():
+            res_g[input_id].label = rename_dict[res_g[input_id].label]
+        return res_g
 
     @classmethod
     def generate_4bit_decoder(cls: Type[TB], bit1: str, bit2: str, bit3: str, bit4: str, bit5: str, bit6: str, bit7: str) -> 'bool_circ':
+        """
+        Generates 4bit decoder boolean circuit
+
+        Args:
+            bit1(str) - first bit
+            bit2(str) - second bit
+            bit3(str) - third bit
+            bit4(str) - fourth bit
+            bit5(str) - fifth bit
+            bit6(str) - sixth bit
+            bit7(str) - seventh bit
+        Returns:
+            boolean circuit with 4 outputs
+        """
+        old_bit1, old_bit2, old_bit3, old_bit4, old_bit5, old_bit6, old_bit7 = bit1, bit2, bit3, bit4, bit5, bit6, bit7
+        bit1, bit2, bit3, bit4, bit5, bit6, bit7 = "x1", "x2", "x3", "x4", "x5", "x6", "x7"
+        rename_dict = {bit1:old_bit1, bit2:old_bit2, bit3:old_bit3, bit4:old_bit4, bit5:old_bit5, bit6:old_bit6, bit7:old_bit7}
         # f_l = first_line
         xor_f_l_1 = f"(({bit1})^({bit3})^({bit5})^({bit7}))"
         xor_f_l_2 = f"(({bit2})^({bit3})^({bit6})^({bit7}))"
@@ -1081,7 +1118,10 @@ class bool_circ(open_digraph):
         output_3 = f"(((~{xor_f_l_1})&({xor_f_l_2})&({xor_f_l_3}))^({bit6}))"
         output_4 = f"((({xor_f_l_1})&({xor_f_l_2})&({xor_f_l_3}))^({bit7}))"
 
-        return parse_parentheses(output_1, output_2, output_3, output_4)[0]
+        res_g = parse_parentheses(output_1, output_2, output_3, output_4)[0]
+        for input_id in res_g.get_inputs_ids():
+            res_g[input_id].label = rename_dict[res_g[input_id].label]
+        return res_g
 
     @classmethod
     def carry_lookahead_4n(cls: Type[TB],

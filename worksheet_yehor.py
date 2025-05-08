@@ -13,20 +13,20 @@ logger.add(sys.stdout, level="TRACE")
 # g_from_par[0].display("pars")
 
 # === test evaluate adder
-num_1_bc = bool_circ.from_number(2, 4)
-num_2_bc = bool_circ.from_number(3, 4)
-#
-# # num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() + '| num1 |' + str(idx) for idx in num_1_bc.get_inputs_ids()]
-# # num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() + '| num2 |' + str(idx) for idx in num_2_bc.get_inputs_ids()]
-#
-num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() for idx in num_1_bc.get_inputs_ids()]
-num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_inputs_ids()]
-#
-adder_1 = bool_circ.build_adder(2, num_1, num_2, '0')
-adder_1.display('adder_1')
-#
-adder_1.evaluate()
-adder_1.display('adder_1_evaluated')
+# num_1_bc = bool_circ.from_number(2, 4)
+# num_2_bc = bool_circ.from_number(3, 4)
+# #
+# # # num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() + '| num1 |' + str(idx) for idx in num_1_bc.get_inputs_ids()]
+# # # num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() + '| num2 |' + str(idx) for idx in num_2_bc.get_inputs_ids()]
+# #
+# num_1 = [ num_1_bc.get_id_node_map()[idx].get_label() for idx in num_1_bc.get_inputs_ids()]
+# num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_inputs_ids()]
+# #
+# adder_1 = bool_circ.build_adder(2, num_1, num_2, '0')
+# adder_1.display('adder_1')
+# #
+# adder_1.evaluate()
+# adder_1.display('adder_1_evaluated')
 #
 # # print(get_result_of_evaluated_additioner(adder_1))
 #
@@ -46,3 +46,15 @@ adder_1.display('adder_1_evaluated')
 # bc.display("temp_transformated")
 
 # transform_associative_xor
+
+# ==== encoder
+enc_g = bool_circ.generate_4bit_encoder('0', '1', '0', '1')
+enc_g.display("encoder")
+dec_g = bool_circ.generate_4bit_decoder('', '', '', '', '', '', '')
+dec_g.display("decoder")
+
+comp = dec_g.compose(enc_g)
+comp = bool_circ(comp)
+comp.display("comp_enc")
+comp.evaluate()
+comp.display("evaluated")

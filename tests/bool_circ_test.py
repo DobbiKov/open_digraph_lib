@@ -334,7 +334,7 @@ class BoolCircTests(unittest.TestCase):
         
         circ.evaluate()
         self.assertTrue(circ.is_well_formed(), "Circuit should remain well-formed after evaluation")
-        self.assertEqual(len(circ.get_nodes_ids()), 8)
+        self.assertEqual(len(circ.get_nodes_ids()), 6)
     def test_transform_associative_xor(self):
         n0 = node(0, 'x1', {}, {4: 1})
         n1 = node(1, 'x2', {}, {4: 1})

@@ -32,6 +32,7 @@ class AddNumbersTest(unittest.TestCase):
         max_depth = adder_1.get_graph_depth()
 
         self.assertEqual(output_num, 5)
+        self.assertEqual(len(adder_1.get_nodes_ids()), 10)
         self.assertEqual(max_depth, 2)
 
     def test_add_some_nums(self):
