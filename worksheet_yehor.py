@@ -74,7 +74,7 @@ logger.add(sys.stdout, level="TRACE")
 # print(get_result_of_evaluated_enc_dec(comp))
 
 # ==== carry look ahead
-ca = bool_circ.carry_lookahead_4(['0','0','1','1'], ['0','0','1','0'], '0')
+ca = bool_circ.carry_lookahead_4n(['0','0','1','1', '0', '0', '1', '1'], ['0','0','1','0', '0', '0', '1', '0'], '0')
 ca.display("ca")
 ca.evaluate()
 print(get_result_of_evaluated_additioner(ca))

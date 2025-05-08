@@ -1156,7 +1156,7 @@ class bool_circ(open_digraph):
         res_g.set_inputs(corr_input_ids)
         return res_g
 
-    @classmethod
+    @classmethod 
     def carry_lookahead_4n(cls: Type[TB],
                            reg1: list[str],
                            reg2: list[str],
@@ -1169,42 +1169,65 @@ class bool_circ(open_digraph):
         assert len(reg1) == len(reg2) and len(reg1) % 4 == 0
         blocks = len(reg1) // 4
 
-        # first 4‑bit block with initial carry
-        circ = cls.carry_lookahead_4(reg1[0:4], reg2[0:4], carry)
-
-        # for each subsequent 4‑bit block
-        for i in range(1, blocks):
-            c_label = f"c{4*i}"
-            blk = cls.carry_lookahead_4(
-                reg1[4*i:4*(i+1)],
-                reg2[4*i:4*(i+1)],
-                c_label
-            )
-            merged = circ.parallel(blk)
+        if len(reg1) == 4:
+            return cls.carry_lookahead_4(reg1, reg2, carry)
+        sub_len = len(reg1) - 4
 
 
-            #merge the carry out of the previous block with the carry in of the next block
-            # find the carry out of the previous block
-            out_id = next(
-                oid for oid in merged.get_outputs_ids()
-                if merged.get_id_node_map()[oid].get_label() == c_label
-            )
-            parent = list(merged.get_id_node_map()[out_id].parents.keys())[0]
-            merged.remove_node_by_id(out_id)
+        reg_1_2 = reg1[0:4]
+        reg_1_1 = reg1[4:] 
 
-            # find the carry in of the next block
-            in_id = next(
-                iid for iid in merged.get_inputs_ids()
-                if merged.get_id_node_map()[iid].get_label() == c_label
-            )
-            child = list(merged.get_id_node_map()[in_id].children.keys())[0]
-            merged.remove_node_by_id(in_id)
+        reg_2_1 = reg2[0:4]
+        reg_2_2 = reg2[4:]
 
-            merged.add_edge(parent, child)
-            circ = merged
+        circ1 = cls.carry_lookahead_4(reg_1_1, reg_2_1, 'carry_temp')
+        circ2 = cls.carry_lookahead_4n(reg_1_2, reg_2_2, carry)
+        
+        
+        inputs_1 = circ1.get_inputs_ids()
+        smaller_output_num = len(circ1.get_outputs_ids())
+        smaller_input_num = len(circ1.get_inputs_ids())
 
-        return bool_circ(circ)
-            
+        bigger_output_num = len(circ2.get_outputs_ids())
+        bigger_input_num = len(circ2.get_inputs_ids())
+
+        old_output_num = len(circ1.get_outputs_ids())
+        old_input_num = len(inputs_1)
+
+        new_bool_circ = circ1.parallel(circ2)
+
+        # removing one output (cause of 2 additioners)
+        # and passing the resulted carry of the right additioner (4n-4) to the left one
+        output_of_second_add_n = new_bool_circ.get_outputs_ids()[smaller_output_num]
+        output_parent = list(new_bool_circ.get_id_node_map()[output_of_second_add_n].parents.keys())[0]
+        new_bool_circ.remove_node_by_id(output_of_second_add_n)
+
+        last_input_of_first_add_n = new_bool_circ.get_inputs_ids()[smaller_input_num-1]
+        input_child = list(new_bool_circ.get_id_node_map()[last_input_of_first_add_n].children.keys())[0]
+        new_bool_circ.remove_node_by_id(last_input_of_first_add_n)
+        new_bool_circ.add_edge(output_parent, input_child)
+
+        first_small_part_of_inputs = new_bool_circ.get_inputs_ids()[0:4]
+        second_small_part_of_inputs = new_bool_circ.get_inputs_ids()[4:8]
+
+        first_big_part_of_inputs = new_bool_circ.get_inputs_ids()[8:sub_len+8]
+        second_big_part_of_inputs = new_bool_circ.get_inputs_ids()[sub_len+8:-1]
+        last_carry = new_bool_circ.get_inputs_ids()[-1]
+
+        res_inputs = []
+        for i in first_small_part_of_inputs:
+            res_inputs.append(i)
+        for i in first_big_part_of_inputs:
+            res_inputs.append(i)
+        for i in second_small_part_of_inputs:
+            res_inputs.append(i)
+        for i in second_big_part_of_inputs:
+            res_inputs.append(i)
+        res_inputs.append(last_carry)
+        new_bool_circ.set_inputs(res_inputs)
+        
+
+        return bool_circ(new_bool_circ) 
 
 def build_adder_0(reg1: list[str], reg2: list[str], carry: str) -> 'bool_circ':
     """
