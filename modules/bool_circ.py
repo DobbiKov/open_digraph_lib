@@ -585,6 +585,46 @@ class bool_circ(open_digraph):
             new_not_id = self.add_node('~')
             self.add_edge(node_id, new_not_id)
             self.add_edge(new_not_id, child_id)
+    def transform_copy_if_has_parent_not(self: T, node_id: int) -> None:
+        """
+        If encounters `not` gate in the parents of the given `copy` gate, then it removes the `not`
+        gate from parents and adds as a child 
+
+        Args:
+            node_id(int) - id of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() != '':
+            return
+        parents = list(gate.get_parents().keys())
+        if len(parents) == 0:
+            return
+
+        def is_node_id_corresponds_to_not_gate(nid: int) -> bool:
+            if nid not in self.get_nodes_ids():
+                return False
+            return self.get_id_node_map()[nid].get_label() == '~'
+
+        parent_id = next(iter(gate.get_parents().keys()))
+        parent_node = self[parent_id]
+        if parent_node.get_label() != '~':
+            return
+
+        children = list(gate.get_children().keys())
+        if len(children) == 0:
+            return
+        par_of_par_id = next(iter(parent_node.get_parents().keys()))
+        self.fuse_nodes(par_of_par_id, parent_id)
+        for child_id in children:
+            mult = gate.get_children()[child_id]
+            for _ in range(mult):
+                new_not_id = self.add_node('~')
+                self.add_edge(node_id, new_not_id)
+                self.add_edge(new_not_id, child_id)
+            self.remove_parallel_edges(node_id, child_id)
     # ======
 
     def evaluate(self) -> None:

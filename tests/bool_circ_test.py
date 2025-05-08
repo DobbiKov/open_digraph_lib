@@ -599,5 +599,31 @@ class BoolCircTests(unittest.TestCase):
         curr_child = next(iter(bc[curr_child].get_children().keys()))
         self.assertEqual( bc[curr_child].get_label(), 'out' )
 
+    def test_transform_copy_with_not_parents(self):
+        n0 = node(0, 'x1', {}, {1:1})
+        n1 = node(1, '~',  {0:1}, {2:1})
+        n2 = node(2, '',   {1:1}, {3:1, 4:3, 6:1})
+        n3 = node(3, 'out1',   {2:1}, {})
+        n4 = node(4, '|',   {2:3}, {5:1})
+        n5 = node(5, 'out2',   {4:1}, {})
+        n6 = node(6, 'out3',   {2:1}, {})
+
+        graph = open_digraph([0], [3, 5, 6], [n0, n1, n2, n3, n4, n5, n6])
+        bc = bool_circ(graph)
+
+        self.assertEqual(bc[0].get_children(), {1:1})
+        self.assertEqual(bc[2].get_parents(), {1:1})
+        self.assertEqual(len(list(bc[2].get_children().keys())), 3)
+        for child_id in list(bc[2].get_children().keys()):
+            self.assertNotEqual(bc[child_id].get_label(), "~")
+
+        bc.transform_copy_if_has_parent_not(2)
+
+        self.assertEqual(bc[0].get_children(), {2:1})
+        self.assertEqual(bc[2].get_parents(), {0:1})
+        self.assertEqual(len(list(bc[2].get_children().keys())), 5)
+        for child_id in list(bc[2].get_children().keys()):
+            self.assertEqual(bc[child_id].get_label(), "~")
+
 if __name__ == "__main__":
     unittest.main()

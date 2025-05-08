@@ -34,18 +34,18 @@ logger.add(sys.stdout, level="TRACE")
 
 # === transformation operations
 
-n0 = node(0, 'x1', {}, {3: 1})
-n1 = node(1, 'x2', {}, {6: 1})
-n2 = node(2, 'x3', {}, {4: 1})
-n3 = node(3, '^', {0:1, 4:1, 6:1}, {5:1})
-n4 = node(4, '~', {2:1}, {3:1})
-n5 = node(5, 'out', {3:1}, {})
-n6 = node(6, '~', {1:1}, {3:1})
+n0 = node(0, 'x1', {}, {1:1})
+n1 = node(1, '~',  {0:1}, {2:1})
+n2 = node(2, '',   {1:1}, {3:1, 4:3, 6:1})
+n3 = node(3, 'out1',   {2:1}, {})
+n4 = node(4, '|',   {2:3}, {5:1})
+n5 = node(5, 'out2',   {4:1}, {})
+n6 = node(6, 'out3',   {2:1}, {})
 
-graph = open_digraph([0, 1, 2], [5], [n0, n1, n2, n3, n4, n5, n6])
+graph = open_digraph([0], [3, 5, 6], [n0, n1, n2, n3, n4, n5, n6])
 bc = bool_circ(graph)
 bc.display("temp")
-bc.transform_xor_if_has_parent_not(3)
+bc.transform_copy_if_has_parent_not(2)
 bc.display("temp_transformated")
 
 # transform_associative_xor
