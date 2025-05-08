@@ -625,5 +625,36 @@ class BoolCircTests(unittest.TestCase):
         for child_id in list(bc[2].get_children().keys()):
             self.assertEqual(bc[child_id].get_label(), "~")
 
+    def test_transform_not_involution(self):
+        n0 = node(0, 'x1', {}, {1:1})
+        n1 = node(1, '~',  {0:1}, {2:1})
+        n2 = node(2, '~',   {1:1}, {3:1})
+        n3 = node(3, 'out1',   {2:1}, {})
+
+        graph = open_digraph([0], [3], [n0, n1, n2, n3])
+        bc = bool_circ(graph)
+
+        self.assertEqual(bc[0].get_children(), {1:1})
+        self.assertEqual(bc[3].get_parents(), {2:1})
+        self.assertTrue(1 in bc.get_nodes_ids())
+        self.assertTrue(2 in bc.get_nodes_ids())
+        self.assertEqual(len(bc.get_nodes_ids()), 4)
+
+        bc.transform_not_involution(1)
+
+        self.assertEqual(bc[0].get_children(), {1:1})
+        self.assertEqual(bc[3].get_parents(), {2:1})
+        self.assertTrue(1 in bc.get_nodes_ids())
+        self.assertTrue(2 in bc.get_nodes_ids())
+        self.assertEqual(len(bc.get_nodes_ids()), 4)
+
+        bc.transform_not_involution(2)
+
+        self.assertEqual(bc[0].get_children(), {3:1})
+        self.assertEqual(bc[3].get_parents(), {0:1})
+        self.assertFalse(1 in bc.get_nodes_ids())
+        self.assertFalse(2 in bc.get_nodes_ids())
+        self.assertEqual(len(bc.get_nodes_ids()), 2)
+
 if __name__ == "__main__":
     unittest.main()

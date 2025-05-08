@@ -625,6 +625,35 @@ class bool_circ(open_digraph):
                 self.add_edge(node_id, new_not_id)
                 self.add_edge(new_not_id, child_id)
             self.remove_parallel_edges(node_id, child_id)
+    def transform_not_involution(self: T, node_id: int) -> None:
+        """
+        If the given `not` gate has a `not` parent then we remove both nodes and connect parent and child cause (~~ = identity)
+
+        Args:
+            node_id(int) - if of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+        gate: node = self[node_id]
+        if gate.get_label() != '~':
+            return
+        if gate.indegree() != 1 or gate.outdegree() != 1:
+            return
+
+        parent_id = next(iter(gate.get_parents().keys()))
+        parent_node: node = self[parent_id]
+
+        if parent_node.get_label() != '~':
+            return
+        if parent_node.indegree() != 1 or parent_node.outdegree() != 1:
+            return
+
+        par_conn_id = next(iter(parent_node.get_parents().keys()))
+        ch_conn_id = next(iter(gate.get_children().keys()))
+        self.add_edge(par_conn_id, ch_conn_id)
+
+        self.remove_node_by_id(node_id)
+        self.remove_node_by_id(parent_id)
     # ======
 
     def evaluate(self) -> None:
