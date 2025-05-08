@@ -470,6 +470,36 @@ class bool_circ(open_digraph):
             return
 
         self.fuse_nodes(par_node_id, node_id)
+
+    def transform_involution_xor(self: T, node_id: int) -> None:
+        """
+        Deconnect xor with a copy parent with the multiplicity of two
+
+        Args:
+            node_id(int) - id of the node
+        """
+        if node_id not in self.get_nodes_ids():
+            return
+
+        gate = self.get_id_node_map()[node_id]
+        if gate.get_label() != '^':
+            return
+
+        parents = list(gate.get_parents().keys())
+        if len(parents) == 0:
+            return
+
+        def is_node_id_corresponds_to_copy_mult_two_gate(nid: int) -> bool:
+            if nid not in self.get_nodes_ids() or nid not in parents:
+                return False
+            return self.get_id_node_map()[nid].get_label() == '' and gate.get_parents()[nid] == 2
+
+        copy_parents = [par_id for par_id in parents if is_node_id_corresponds_to_copy_mult_two_gate(par_id)]
+        while len(copy_parents) != 0:
+            copy_par_id = copy_parents[0]
+            copy_parents.remove(copy_par_id)
+            self.remove_parallel_edges(copy_par_id, node_id)
+
     # ======
 
     def evaluate(self) -> None:
