@@ -492,13 +492,17 @@ class bool_circ(open_digraph):
         def is_node_id_corresponds_to_copy_mult_two_gate(nid: int) -> bool:
             if nid not in self.get_nodes_ids() or nid not in parents:
                 return False
-            return self.get_id_node_map()[nid].get_label() == '' and gate.get_parents()[nid] == 2
+            return self.get_id_node_map()[nid].get_label() == '' and gate.get_parents()[nid] > 1
 
         copy_parents = [par_id for par_id in parents if is_node_id_corresponds_to_copy_mult_two_gate(par_id)]
         while len(copy_parents) != 0:
             copy_par_id = copy_parents[0]
+            multiplicity = gate.get_parents()[copy_par_id]
+            num_of_edges_to_leave = multiplicity % 2 # if number is odd we leave 1 edge, if even, we remove all the edges
             copy_parents.remove(copy_par_id)
             self.remove_parallel_edges(copy_par_id, node_id)
+            if num_of_edges_to_leave == 1:
+                self.add_edge(copy_par_id, node_id)
 
     # ======
 

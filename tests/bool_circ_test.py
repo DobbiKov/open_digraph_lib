@@ -442,6 +442,32 @@ class BoolCircTests(unittest.TestCase):
         self.assertEqual(bc[3].get_parents(), {0:1, 1:1})
         self.assertEqual(bc[4].get_children(), {6:1, 7:1})
 
+        # make pair number of edges
+        num_of_edges = 4
+        for i in range(num_of_edges):
+            bc.add_edge(4, 3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:num_of_edges})
+        self.assertEqual(bc[4].get_children(), {3:num_of_edges, 6:1, 7:1})
+
+        bc.transform_involution_xor(3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1})
+        self.assertEqual(bc[4].get_children(), {6:1, 7:1})
+
+        # make more pair number of edges
+        num_of_edges = 12 
+        for i in range(num_of_edges):
+            bc.add_edge(4, 3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:num_of_edges})
+        self.assertEqual(bc[4].get_children(), {3:num_of_edges, 6:1, 7:1})
+
+        bc.transform_involution_xor(3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1})
+        self.assertEqual(bc[4].get_children(), {6:1, 7:1})
+
     def test_transform_involution_xor_dont_work(self):
         # won't work cause only one multiplicity
         n0 = node(0, 'x1', {}, {3: 1})
@@ -458,6 +484,56 @@ class BoolCircTests(unittest.TestCase):
 
         self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:1})
         self.assertEqual(bc[4].get_children(), {3:1, 6:1, 7:1})
+
+        bc.transform_involution_xor(3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:1})
+        self.assertEqual(bc[4].get_children(), {3:1, 6:1, 7:1})
+
+    def test_transform_involution_xor_odd(self):
+        # won't work cause only one multiplicity
+        n0 = node(0, 'x1', {}, {3: 1})
+        n1 = node(1, 'x2', {}, {3: 1})
+        n2 = node(2, 'x3', {}, {4: 1})
+        n3 = node(3, '^', {0:1, 1:1, 4:1}, {5: 1})
+        n4 = node(4, '', {2:1}, {3:1, 6:1, 7:1})
+        n5 = node(5, 'out1', {3:1}, {})
+        n6 = node(6, 'out2', {4:1}, {})
+        n7 = node(7, 'out3', {4:1}, {})
+
+        graph = open_digraph([0, 1, 2], [5, 6, 7], [n0, n1, n2, n3, n4, n5, n6, n7])
+        bc = bool_circ(graph)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:1})
+        self.assertEqual(bc[4].get_children(), {3:1, 6:1, 7:1})
+
+        bc.transform_involution_xor(3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:1})
+        self.assertEqual(bc[4].get_children(), {3:1, 6:1, 7:1})
+
+        # make odd number of edges
+        bc.remove_parallel_edges(4, 3)
+        num_of_edges = 3 
+        for i in range(num_of_edges):
+            bc.add_edge(4, 3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:num_of_edges})
+        self.assertEqual(bc[4].get_children(), {3:num_of_edges, 6:1, 7:1})
+
+        bc.transform_involution_xor(3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:1})
+        self.assertEqual(bc[4].get_children(), {3:1, 6:1, 7:1})
+
+        # make more odd number of edges
+        bc.remove_parallel_edges(4, 3)
+        num_of_edges = 11
+        for i in range(num_of_edges):
+            bc.add_edge(4, 3)
+
+        self.assertEqual(bc[3].get_parents(), {0:1, 1:1, 4:num_of_edges})
+        self.assertEqual(bc[4].get_children(), {3:num_of_edges, 6:1, 7:1})
 
         bc.transform_involution_xor(3)
 
