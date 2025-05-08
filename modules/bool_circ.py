@@ -1121,6 +1121,9 @@ class bool_circ(open_digraph):
         res_g = parse_parentheses(output_1, output_2, output_3, output_4)[0]
         for input_id in res_g.get_inputs_ids():
             res_g[input_id].label = rename_dict[res_g[input_id].label]
+        curr_input_ids = res_g.get_inputs_ids()
+        corr_input_ids = [curr_input_ids[0], curr_input_ids[4], curr_input_ids[1], curr_input_ids[6], curr_input_ids[2], curr_input_ids[5], curr_input_ids[3]]
+        res_g.set_inputs(corr_input_ids)
         return res_g
 
     @classmethod
@@ -1291,6 +1294,25 @@ def get_result_of_evaluated_additioner(bc: 'bool_circ') -> str:
 
     labels_for_par_nodes = [n.get_label() for n in par_out_nodes] # get labels of the last ones
     list_res = labels_for_par_nodes[1:] # remove the carry
+    res_str = "".join(list_res) # convert to string
+
+    return res_str
+
+def get_result_of_evaluated_enc_dec(bc: 'bool_circ') -> str:
+    """
+    Gets an evaluated boolean circuit additioner and extracts the calculated result in the form of string
+
+    Args:
+        bc(bool_circ) - evaluated boolean circuit
+    Returns:
+        str - the result
+    """
+
+    output_nodes = [ n for n in bc.get_nodes_by_ids(bc.get_outputs_ids())] # get all output nodes
+    par_out_nodes = [ bc.get_id_node_map()[ list(n.get_parents().keys())[0] ] for n in output_nodes] # get their parents
+
+    labels_for_par_nodes = [n.get_label() for n in par_out_nodes] # get labels of the last ones
+    list_res = labels_for_par_nodes[:] # remove the carry
     res_str = "".join(list_res) # convert to string
 
     return res_str

@@ -47,14 +47,28 @@ logger.add(sys.stdout, level="TRACE")
 
 # transform_associative_xor
 
+enc_g = bool_circ.generate_4bit_encoder('0', '1', '0', '1')
+dec_g = bool_circ.generate_4bit_decoder('', '', '', '', '', '', '')
+comp = dec_g.compose(enc_g)
+comp = bool_circ(comp)
+comp.evaluate()
+print(get_result_of_evaluated_enc_dec(comp))
 # ==== encoder
 enc_g = bool_circ.generate_4bit_encoder('0', '1', '0', '1')
-enc_g.display("encoder")
+# enc_g.display("encoder")
+# enc_g.evaluate()
+# enc_g.display("encoder")
+# print(get_result_of_evaluated_enc_dec(enc_g))
+# dec_g = bool_circ.generate_4bit_decoder('0', '1', '0', '0', '1', '0', '1')
 dec_g = bool_circ.generate_4bit_decoder('', '', '', '', '', '', '')
-dec_g.display("decoder")
-
+# dec_g.display("dec")
+# dec_g.evaluate()
+print(get_result_of_evaluated_enc_dec(dec_g))
+# dec_g.display("decoder")
+#
 comp = dec_g.compose(enc_g)
 comp = bool_circ(comp)
 comp.display("comp_enc")
 comp.evaluate()
 comp.display("evaluated")
+print(get_result_of_evaluated_enc_dec(comp))
