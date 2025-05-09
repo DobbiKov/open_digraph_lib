@@ -721,7 +721,8 @@ class bool_circ(open_digraph):
                 if old_nodes_count != len(self.get_nodes_ids()) or node_id not in self.get_nodes_ids():
                     changed = True
                     if CONFIG.DEBUG:
-                        self.display(f"debug_evualte_{debug_id}")
+                        self.save_as_pdf_file(f"debug_evualte_{debug_id}")
+                        logger.trace(f"debaug_evaluage_{debug_id}")
                         debug_id += 1
                     break  # Start from the beginning
 
