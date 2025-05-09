@@ -2,6 +2,7 @@ import copy
 import random
 import math
 
+import CONFIG
 from loguru import logger
 from modules.open_digraph import node, open_digraph
 
@@ -670,6 +671,7 @@ class bool_circ(open_digraph):
 
         """
         changed = True
+        debug_id = 0
         while changed:
             changed = False
 
@@ -718,6 +720,9 @@ class bool_circ(open_digraph):
                 # Check if any transformation was applied
                 if old_nodes_count != len(self.get_nodes_ids()) or node_id not in self.get_nodes_ids():
                     changed = True
+                    if CONFIG.DEBUG:
+                        self.display(f"debug_evualte_{debug_id}")
+                        debug_id += 1
                     break  # Start from the beginning
 
                 

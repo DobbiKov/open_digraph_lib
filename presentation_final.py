@@ -16,6 +16,7 @@ num_2 = [ num_2_bc.get_id_node_map()[idx].get_label() for idx in num_2_bc.get_in
 
 adder_1 = bool_circ.build_half_adder(2, num_1, num_2)
 adder_1.display('half_adder_1', verbose=True)
-#
+
+adder_1.evaluate()
 # adder_1.evaluate()
 # adder_1.display('adder_1_evaluated')
