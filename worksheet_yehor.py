@@ -12,6 +12,17 @@ logger.add(sys.stdout, level="TRACE")
 # g_from_par = parse_parentheses("(((x0)&(x1))|(x2))")
 # g_from_par[0].display("pars")
 
+# === save for report
+adder_1_bit = bool_circ.build_adder(0, ['0'], ['1'], '0')
+adder_1_bit.save_as_pdf_file("adder_1_bit")
+
+adder_3_bit = bool_circ.build_adder(1, ['0', '1'], ['0', '1'], '0')
+adder_3_bit.save_as_pdf_file("adder_3_bit")
+
+cla = bool_circ.carry_lookahead_4(['0', '0', '1', '0'], ['0', '1', '1', '0'], '0')
+cla.save_as_pdf_file("carry_lookahead_4")
+
+
 # === test evaluate adder
 # num_1_bc = bool_circ.from_number(2, 4)
 # num_2_bc = bool_circ.from_number(3, 4)
@@ -74,7 +85,7 @@ logger.add(sys.stdout, level="TRACE")
 # print(get_result_of_evaluated_enc_dec(comp))
 
 # ==== carry look ahead
-ca = bool_circ.carry_lookahead_4n(['0','0','1','1', '0', '0', '1', '1'], ['0','0','1','0', '0', '0', '1', '0'], '0')
-ca.display("ca")
-ca.evaluate()
-print(get_result_of_evaluated_additioner(ca))
+# ca = bool_circ.carry_lookahead_4n(['0','0','1','1', '0', '0', '1', '1'], ['0','0','1','0', '0', '0', '1', '0'], '0')
+# ca.display("ca")
+# ca.evaluate()
+# print(get_result_of_evaluated_additioner(ca))
