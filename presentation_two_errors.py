@@ -12,8 +12,7 @@ bit1, bit2, bit3, bit4 = '0', '1', '0', '1'
 res = bit1+bit2+bit3+bit4
 enc_g = bool_circ.generate_4bit_encoder(bit1, bit2, bit3, bit4)
 dec_g = bool_circ.generate_4bit_decoder('', '', '', '~', '', '', '~')
-#enc_g.display('encoder')
-dec_g = bool_circ.generate_4bit_decoder('', '', '', '', '', '', '')
+enc_g.display('encoder')
 dec_g.display('decoder')
 
 comp = dec_g.compose(enc_g)
@@ -21,4 +20,4 @@ comp = bool_circ(comp)
 comp.display('comp')
 
 comp.evaluate()
-#comp.display('encoder_decoder_compose')
+comp.display('encoder_decoder_compose')
