@@ -1,9 +1,9 @@
 # Open Digraph library written in python
 
 ## Authors:
-- Yehor Korotenko (yehor.korotenko@etu-upsaclay.fr)
-- Sipan Bareyan (sipan.bareyan@etu-upsaclay.fr)
-- Ivan Kharkov (ivan.kharkov@etu-upsaclay.fr)
+- Yehor Korotenko (yehor.korotenko@universite-paris-saclay.fr)
+- Sipan Bareyan (sipan.bareyan@universite-paris-saclay.fr)
+- Ivan Kharkov (ivan.kharkov@universite-paris-saclay.fr)
 
 ## Additional info
 Repository: [**https://github.com/DobbiKov/open_digraph_lib**](https://github.com/DobbiKov/open_digraph_lib)
